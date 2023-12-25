@@ -1,0 +1,13 @@
+*
+!express/
+!express/**
+!react/
+!react/**
+!.vscode/
+!.vscode/**
+!.husky
+!.husky/**
+!.gitignore
+!package.json
+!.cz-config.js
+!commitlint.config.js

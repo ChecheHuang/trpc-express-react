@@ -1,0 +1,81 @@
+{
+  "console": {
+    "prefix": "clgg",
+    "body": ["console.cuslog(${1})"],
+    "description": "custom console"
+  },
+  "react-template": {
+    "prefix": "fc",
+    "body": [
+      "const ${1:${TM_FILENAME_BASE/\\.(jsx|tsx)$//}} = () => {",
+      "  return (",
+      "    <>",
+      "      <div>${1:${TM_FILENAME_BASE/\\.(jsx|tsx)$//}}</div>",
+      "    </>",
+      "  )",
+      "}",
+      "",
+      "export default ${1:${TM_FILENAME_BASE/\\.(jsx|tsx)$//}}",
+      ""
+    ],
+    "description": "react template2"
+  },
+  "react-template2": {
+    "prefix": "fc2",
+    "body": [
+      "type ${1:${TM_FILENAME_BASE/\\.(jsx|tsx)$//}}Props = {",
+      "  ",
+      "}",
+      "",
+      "const ${1:${TM_FILENAME_BASE/\\.(jsx|tsx)$//}} = ({",
+      "  ",
+      "}:${1:${TM_FILENAME_BASE/\\.(jsx|tsx)$//}}Props) => {",
+      "  return (",
+      "    <>",
+      "      <div>${1:${TM_FILENAME_BASE/\\.(jsx|tsx)$//}}</div>",
+      "    </>",
+      "  )",
+      "}",
+      "",
+      "export default ${1:${TM_FILENAME_BASE/\\.(jsx|tsx)$//}}",
+      ""
+    ],
+    "description": "react template"
+  },
+  "react-template3": {
+    "prefix": "fcc3",
+    "body": [
+      "type ${1:${TM_FILENAME_BASE/\\.(jsx|tsx)$//}}Props<T> = {",
+      "  ",
+      "}",
+      "",
+      "function ${1:${TM_FILENAME_BASE/\\.(jsx|tsx)$//}}<T>({",
+      "  ",
+      "}:${1:${TM_FILENAME_BASE/\\.(jsx|tsx)$//}}Props<T>){",
+      "  return (",
+      "    <>",
+      "      <div>${1:${TM_FILENAME_BASE/\\.(jsx|tsx)$//}}</div>",
+      "    </>",
+      "  )",
+      "}",
+      "",
+      "export default ${1:${TM_FILENAME_BASE/\\.(jsx|tsx)$//}}",
+      ""
+    ],
+    "description": "react template"
+  },
+  "react-layout-template": {
+    "prefix": "fcl",
+    "body": [
+      "import { Outlet } from 'react-router-dom'",
+      "",
+      "const Layout = () => {",
+      "  return <Outlet />",
+      "}",
+      "",
+      "export default Layout",
+      ""
+    ],
+    "description": "react layout template"
+  }
+}

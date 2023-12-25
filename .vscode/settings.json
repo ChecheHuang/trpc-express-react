@@ -1,0 +1,13 @@
+{
+  "favorites.resources": [
+    {
+      "filePath": "express\\prisma\\schema.prisma",
+      "group": "Default"
+    }
+  ],
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#223304",
+    "titleBar.activeBackground": "#304706",
+    "titleBar.activeForeground": "#F4FDE4"
+  }
+}

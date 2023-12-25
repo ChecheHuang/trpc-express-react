@@ -1,0 +1,13 @@
+@keyframes loader-anim {
+    0% {
+        width: 0%;
+    }
+
+    100% {
+        width: 100%;
+    }
+}
+
+.animateLoader {
+    animation: loader-anim 2s infinite;
+}

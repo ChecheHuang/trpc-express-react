@@ -1,0 +1,10 @@
+dist/
+node_modules/
+src/serviceWorker.js
+.cz-config.js
+tsconfig.json
+tsconfig.node.json
+package.json
+package-lock.json
+yarn-lock
+**/meta.ts
