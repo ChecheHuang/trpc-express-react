@@ -227,6 +227,11 @@ export const believer = router({
             ...select,
             children: {
               select,
+              where: {
+                id: {
+                  not: id,
+                },
+              },
             },
           },
         },
@@ -239,15 +244,26 @@ export const believer = router({
       },
     })
 
+    // console.cuslog(data)
+
     if (!data) throw new TRPCError({ code: 'NOT_FOUND', message: '找不到該客戶' })
     const { birthday, children, parent, ...believer } = data
 
-    const searchFamily = async () => {
-      if (parent === null) return [{ isParent: true, ...believer }, ...children.map((item) => ({ isParent: false, ...item }))]
-      const { children: parentChildren, ...parentData } = parent
-      return [{ isParent: true, ...parentData }, ...parentChildren.map((item) => ({ isParent: false, ...item }))]
+    if (parent === null) {
+      const result = [
+        {
+          ...believer,
+          isParent: true,
+          birthday: dayjs(birthday).format('YYYY-MM-DD HH:mm:ss'),
+        },
+        ...children.map(({ birthday, ...child }) => ({
+          ...child,
+          isParent: false,
+          birthday: dayjs(birthday).format('YYYY-MM-DD HH:mm:ss'),
+        })),
+      ]
+      return result
     }
-    const family = await searchFamily()
 
     const result = {
       ...believer,

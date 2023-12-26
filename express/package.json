@@ -8,6 +8,7 @@
     "dev": "cross-env  ts-node-dev  src/server.ts",
     "build": "esbuild src/**/*.ts  --bundle --packages=external --platform=node --format=cjs --outdir=dist ",
     "db:seed": "tsx scripts/seed.ts ",
+    "db:seedd": "tsx scripts/seed.ts & npm run dev ",
     "db:studio": "prisma studio",
     "db:push": "prisma db push && prisma generate",
     "postinstall": "prisma generate",

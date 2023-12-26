@@ -143,7 +143,7 @@ model Believer {
 
 model Service {
   id       String @id @default(cuid())
-  category String // 類別
+  category String @unique // 類別
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -153,30 +153,30 @@ model Service {
 
 model ServiceItem {
   id          String @id @default(cuid())
-  year        Int // 年度
-  name        String // 名稱
-  price       Int // 價格
-  description String // 說明
-  serviceId   String // 服務 id
+  year        Int /// 年度
+  name        String /// 名稱
+  price       Int /// 價格
+  description String @default("") /// 說明
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  service Service @relation(fields: [serviceId], references: [id]) // 服務
+  serviceId String // 服務 id
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade) // 服務
 
-  serviceItemDetails ServiceItemDetail[] // 服務項目明細
+  serviceItemDetails ServiceItemDetail[] /// 服務項目明細
 }
 
 model ServiceItemDetail {
-  row   Int    @id @default(autoincrement()) //燈座行
-  start Int    @default(0) // 開始位置
+  id    String @id @default(cuid())
+  name  String @unique // 燈座名稱
+  start Int    @default(1) // 開始位置
   end   Int // 結束位置
-  name  String @default("")
 
   serviceItemId String // 服務項目 id
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  serviceItem ServiceItem @relation(fields: [serviceItemId], references: [id]) // 服務項目
+  serviceItem ServiceItem @relation(fields: [serviceItemId], references: [id], onDelete: Cascade) // 服務項目
 }

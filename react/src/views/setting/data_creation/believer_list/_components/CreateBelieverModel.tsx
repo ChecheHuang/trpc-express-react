@@ -1,24 +1,20 @@
-import Group from '@/components/Group'
-import FormTemplate from '@/components/form/FormTemplate'
+import AddressInput from '@/components/form/AddressInput'
 import { useAntd } from '@/provider/AntdProvider'
 import { trpcQuery } from '@/provider/TrpcProvider'
 import { TrpcInputs } from '@/types/trpc'
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons'
 import {
+  Button,
+  Checkbox,
+  DatePicker,
+  Form,
   Input,
   Modal,
-  Form,
-  DatePicker,
-  Cascader,
   Radio,
-  InputRef,
-  Button,
-  Space,
-  Checkbox,
   Select,
+  Space,
 } from 'antd'
 import dayjs, { Dayjs } from 'dayjs'
-import { useRef } from 'react'
 
 type CreateBelieverInputType = GetArrType<
   TrpcInputs['believer']['createBeliever']
@@ -51,8 +47,6 @@ const CreateBelieverModel = ({
   const familyMembers = Form.useWatch('familyMembers', form)
   const { message } = useAntd()
 
-  const addressInputRef = useRef<InputRef>(null)
-  const { data: addressOptions } = trpcQuery.options.cityOptions.useQuery()
   const utils = trpcQuery.useUtils()
   const { mutate: createBeliever, isLoading: createBelieverLoading } =
     trpcQuery.believer.createBeliever.useMutation({
@@ -87,7 +81,7 @@ const CreateBelieverModel = ({
       )
       createBeliever(submitData)
     } catch (error: any) {
-      console.log(error?.values)
+      // console.log(error?.values)
     }
   }
   const handleCancel = () => {
@@ -112,7 +106,8 @@ const CreateBelieverModel = ({
         ]}
         width={1200}
       >
-        <FormTemplate
+        <Form
+          labelCol={{ span: 4 }}
           form={form}
           initialValues={{
             name: '王曉明',
@@ -137,7 +132,7 @@ const CreateBelieverModel = ({
             ],
           }}
         >
-          <Group unstyled>
+          <div className="grid gap-x-3 grid-cols-2">
             <Form.Item
               label="姓名"
               name="name"
@@ -145,7 +140,6 @@ const CreateBelieverModel = ({
             >
               <Input placeholder="請輸入姓名" />
             </Form.Item>
-
             <Form.Item
               label="性別"
               name="gender"
@@ -171,31 +165,14 @@ const CreateBelieverModel = ({
             <Form.Item label="電話" name="phone">
               <Input />
             </Form.Item>
-            <Form.Item label="地址">
-              <Form.Item name="cityAndArea" className="mb-2">
-                <Cascader
-                  placeholder="請選擇縣市"
-                  onChange={(stringArray) => {
-                    if (!stringArray) return
-                    addressInputRef.current?.focus()
-                    form.setFieldValue('address', '')
-                  }}
-                  options={addressOptions}
-                />
-              </Form.Item>
-              <Form.Item
-                name="address"
-                rules={[{ required: true, message: '請輸入地址' }]}
-              >
-                <Input ref={addressInputRef} placeholder="請輸入地址" />
-              </Form.Item>
-            </Form.Item>
+            <AddressInput form={form} />
+
             <Form.Item
               label={
                 <div>
                   家庭成員
                   <br />
-                  (打勾選取為戶長)
+                  (打勾為戶長)
                 </div>
               }
             >
@@ -284,8 +261,8 @@ const CreateBelieverModel = ({
                 )}
               </Form.List>
             </Form.Item>
-          </Group>
-        </FormTemplate>
+          </div>
+        </Form>
       </Modal>
     </>
   )

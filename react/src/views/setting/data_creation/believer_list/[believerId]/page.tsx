@@ -8,17 +8,7 @@ import Container from '@/components/container/Container'
 import { useAntd } from '@/provider/AntdProvider'
 import { trpcQuery } from '@/provider/TrpcProvider'
 import { TrpcOutputs } from '@/types/trpc'
-import {
-  DatePicker,
-  Form,
-  Input,
-  Table,
-  Cascader,
-  Radio,
-  Space,
-  Button,
-} from 'antd'
-import { ColumnsType } from 'antd/es/table'
+import { DatePicker, Form, Input, Radio } from 'antd'
 import dayjs, { Dayjs } from 'dayjs'
 import lunisolar from 'lunisolar'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -48,7 +38,6 @@ const CustomerIdPage = () => {
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields()
-
       const updateData = {
         ...values,
         id,
@@ -123,58 +112,3 @@ const CustomerIdPage = () => {
 }
 
 export default CustomerIdPage
-
-function ServiceTable() {
-  const dataSource = [
-    {
-      number: 'H0000000009',
-      year: '110',
-      date: '110年11月11日',
-      totalCount: 2000,
-    },
-    {
-      number: 'H0000000010',
-      year: '111',
-      date: '111年03月21日',
-      totalCount: 2140,
-    },
-    {
-      number: 'H0000000011',
-      year: '112',
-      date: '112年07月03日',
-      totalCount: 1200,
-    },
-  ]
-
-  const columns: ColumnsType<any> = [
-    {
-      title: '編號',
-      render: (_, props) => {
-        return <a href="#">{props.number}</a>
-      },
-    },
-    {
-      title: '年度',
-      dataIndex: 'year',
-    },
-
-    {
-      title: '日期',
-      dataIndex: 'date',
-    },
-
-    {
-      title: '總金額',
-      dataIndex: 'totalCount',
-    },
-  ]
-
-  return (
-    <Table
-      bordered
-      dataSource={dataSource}
-      columns={columns}
-      pagination={false}
-    />
-  )
-}

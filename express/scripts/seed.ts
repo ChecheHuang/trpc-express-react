@@ -1,11 +1,11 @@
-import { trpcRouter } from '../src/routers/trpc';
+import { trpcRouter } from '../src/routers/trpc'
 import believers from './believers.json'
-import routes from './routes.json';
-import taiwanCity from './taiwanCity.json';
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
-import chalk from 'chalk';
-
+import routes from './routes.json'
+import services from './services.json'
+import taiwanCity from './taiwanCity.json'
+import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcrypt'
+import chalk from 'chalk'
 
 const prismadb = new PrismaClient()
 const deleteData = async () => {
@@ -15,6 +15,7 @@ const deleteData = async () => {
   await prismadb.api.deleteMany()
   await prismadb.route.deleteMany()
   await prismadb.taiwanCity.deleteMany()
+  await prismadb.service.deleteMany()
 }
 
 const init = async () => {
@@ -114,7 +115,6 @@ const init = async () => {
   //todo 創建信眾資料
   const believerSeed = await (async () => {
     const createdUserId = (await prismadb.user.findFirst())?.id as string
-
     for (const { children: originChildren, birthday: originBirthday, ...rest } of believers) {
       await prismadb.believer.create({
         data: {
@@ -131,6 +131,15 @@ const init = async () => {
           },
           ...rest,
         },
+      })
+    }
+  })()
+
+  //todo 創建服務
+  const serviceSeed = await (async () => {
+    for (const data of services) {
+      await prismadb.service.create({
+        data,
       })
     }
   })()
