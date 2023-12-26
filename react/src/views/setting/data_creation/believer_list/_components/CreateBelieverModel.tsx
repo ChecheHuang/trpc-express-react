@@ -1,4 +1,5 @@
 import AddressInput from '@/components/form/AddressInput'
+import CustomRadio from '@/components/form/CustomRadio'
 import { useAntd } from '@/provider/AntdProvider'
 import { trpcQuery } from '@/provider/TrpcProvider'
 import { TrpcInputs } from '@/types/trpc'
@@ -25,12 +26,8 @@ type FamilyMemberType = Pick<
   'name' | 'isParent' | 'birthday' | 'gender'
 >
 
-type FormDataType = Omit<
-  CreateBelieverInputType,
-  'birthday' | 'city' | 'area' | 'isParent'
-> & {
+type FormDataType = Omit<CreateBelieverInputType, 'birthday' | 'isParent'> & {
   birthday: Dayjs
-  cityAndArea: string[]
   familyMembers: FamilyMemberType[]
 }
 
@@ -44,7 +41,7 @@ const CreateBelieverModel = ({
   setCreateModalOpen,
 }: CreateBelieverModelProps) => {
   const [form] = Form.useForm<FormDataType>()
-  const familyMembers = Form.useWatch('familyMembers', form)
+  const watchFamilyMembers = Form.useWatch('familyMembers', form)
   const { message } = useAntd()
 
   const utils = trpcQuery.useUtils()
@@ -60,9 +57,11 @@ const CreateBelieverModel = ({
 
   const handleSubmit = async () => {
     try {
-      const { familyMembers, cityAndArea, phone, address, ...values } =
-        await form.validateFields()
-      const [city, area] = cityAndArea
+      const validateValues = await form.validateFields()
+      console.log(validateValues)
+      return
+      const { familyMembers, phone, city, area, address, ...values } =
+        validateValues
       const isParent = !familyMembers.some(
         (familyMember) => familyMember.isParent,
       )
@@ -93,7 +92,8 @@ const CreateBelieverModel = ({
     <>
       <Modal
         title="新增信眾"
-        open={createModalOpen}
+        open={true}
+        // open={createModalOpen}
         onOk={handleSubmit}
         onCancel={handleCancel}
         footer={[
@@ -111,10 +111,11 @@ const CreateBelieverModel = ({
           form={form}
           initialValues={{
             name: '王曉明',
-            gender: '男',
             birthday: dayjs(),
             phone: '0912345678',
-            cityAndArea: ['台北市', '中正區'],
+            gender: '哈哈哈',
+            city: '台北市',
+            area: '中正區',
             address: '忠孝東路',
             familyMembers: [
               {
@@ -132,7 +133,7 @@ const CreateBelieverModel = ({
             ],
           }}
         >
-          <div className="grid gap-x-3 grid-cols-2">
+          <div className="grid grid-cols-1 gap-x-3 md:grid-cols-2">
             <Form.Item
               label="姓名"
               name="name"
@@ -140,17 +141,14 @@ const CreateBelieverModel = ({
             >
               <Input placeholder="請輸入姓名" />
             </Form.Item>
-            <Form.Item
-              label="性別"
+            <CustomRadio
+              form={form}
               name="gender"
-              rules={[{ required: true, message: '請選擇性別' }]}
-            >
-              <Radio.Group>
-                <Radio value="男">男</Radio>
-                <Radio value="女">女</Radio>
-                <Radio value="其他">其他</Radio>
-              </Radio.Group>
-            </Form.Item>
+              label="性別"
+              options={['男', '女', '其他']}
+              required
+            />
+
             <Form.Item
               label="生日"
               name="birthday"
@@ -188,7 +186,7 @@ const CreateBelieverModel = ({
                           // initialValue={false}
                         >
                           <Checkbox
-                            checked={familyMembers?.[key]?.isParent}
+                            checked={watchFamilyMembers?.[key]?.isParent}
                             onChange={(e) => {
                               const originFamilyMembers = form.getFieldValue(
                                 'familyMembers',
@@ -209,7 +207,7 @@ const CreateBelieverModel = ({
 
                         <Form.Item
                           {...restField}
-                          className="mb-2 w-[110px]"
+                          className="mb-2 "
                           name={[name, 'name']}
                           rules={[{ required: true, message: '請輸入姓名' }]}
                         >
@@ -217,7 +215,7 @@ const CreateBelieverModel = ({
                         </Form.Item>
                         <Form.Item
                           {...restField}
-                          className="mb-2 w-[70px]"
+                          className="mb-2 md:w-[70px]"
                           name={[name, 'gender']}
                           rules={[{ required: true, message: '請選擇性別' }]}
                         >
@@ -240,7 +238,7 @@ const CreateBelieverModel = ({
                           <DatePicker
                             placeholder="請選擇生日"
                             format={'YYYY-MM-DD HH:mm:ss'}
-                            className="w-[180px]"
+                            className="md:w-[180px]"
                             showTime
                           />
                         </Form.Item>

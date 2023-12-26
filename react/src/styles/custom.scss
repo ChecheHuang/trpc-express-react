@@ -1,60 +1,71 @@
 .horizontal {
-    .ant-row.ant-form-item-row {
-        flex-direction: row;
-
-        .ant-form-item-label {
-            white-space: nowrap;
-            text-align: end;
-            padding: 0;
-
-            label {
-                height: 32px;
-
-                &::after {
-                    display: block;
-                    content: ':';
-                    position: relative;
-                    margin-block: 0;
-                    margin-inline-start: 2px;
-                    margin-inline-end: 8px;
-                }
-            }
-        }
-
-        .ant-form-item-control {
-            flex: 1 1 0;
-            min-width: 0;
-        }
-    }
-}
-
-.vertical {
-
-    .ant-row.ant-form-item-row {
-        flex-direction: column;
-    }
+  .ant-row.ant-form-item-row {
+    flex-direction: row;
 
     .ant-form-item-label {
-        white-space: nowrap;
-        text-align: end;
-        padding: 0;
+      white-space: nowrap;
+      text-align: end;
+      padding: 0;
 
-        label {
-            height: 32px;
+      label {
+        height: 32px;
 
-            &::after {
-                display: block;
-                content: ':';
-                position: relative;
-                margin-block: 0;
-                margin-inline-start: 2px;
-                margin-inline-end: 8px;
-            }
+        &::after {
+          display: block;
+          content: ':';
+          position: relative;
+          margin-block: 0;
+          margin-inline-start: 2px;
+          margin-inline-end: 8px;
         }
+      }
     }
 
     .ant-form-item-control {
-        flex: 1 1 0;
-        min-width: 0;
+      flex: 1 1 0;
+      min-width: 0;
     }
+  }
+}
+
+.vertical {
+  .ant-row.ant-form-item-row {
+    flex-direction: column;
+  }
+
+  .ant-form-item-label {
+    white-space: nowrap;
+    text-align: end;
+    padding: 0;
+
+    label {
+      height: 32px;
+
+      &::after {
+        display: block;
+        content: ':';
+        position: relative;
+        margin-block: 0;
+        margin-inline-start: 2px;
+        margin-inline-end: 8px;
+      }
+    }
+  }
+
+  .ant-form-item-control {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+
+.required {
+  .ant-form-item-label label::before {
+    display: inline-block;
+    margin-inline-end: 4px;
+    color: #ff4d4f;
+    font-size: 14px;
+    font-family: SimSun, sans-serif;
+    line-height: 1;
+    content: '*';
+  }
 }
