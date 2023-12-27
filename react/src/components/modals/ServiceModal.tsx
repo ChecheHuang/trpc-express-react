@@ -7,32 +7,60 @@ import { TrpcOutputs } from '@/types/trpc'
 import { Button, Checkbox, Form, Input, Modal } from 'antd'
 import { ColumnsType } from 'antd/es/table'
 import { FormInstance, Table } from 'antd/lib'
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import { create } from 'zustand'
 
 type ServiceModalStoreType = {
+  believers: { name: string; id: string }[]
   isOpen: boolean
-  onOpen: () => void
+  onOpen: (believerId: { name: string; id: string }) => void
   onClose: () => void
 }
 
 export const useServiceModalStore = create<ServiceModalStoreType>((set) => ({
+  believers: [],
   isOpen: true,
-  onOpen: () => set({ isOpen: true }),
+  onOpen: (believer) => set({ isOpen: true, believers: [believer] }),
   onClose: () => set({ isOpen: false }),
 }))
 
 type DataType = GetArrType<TrpcOutputs['service']['getServices']>
 
 function ServiceModal() {
-  const { isOpen, onClose } = useServiceModalStore()
+  const { isOpen, onClose, believers } = useServiceModalStore()
   const { windowWidth } = useWindowInfo()
   const { modal } = useAntd()
   const { name } = useUserStore()
   const { data, isLoading } = trpcQuery.service.getServices.useQuery()
-  console.log(data)
-
   const [form] = Form.useForm()
+
+  const flattenServiceItemMap = useMemo(() => {
+    const map = new Map()
+    if (data) {
+      data.forEach((item) => {
+        item.serviceItems.forEach(({id,price}) => {
+          map.set(id, price)
+        })
+      })
+    }
+    return map
+  }, [data])
+
+  const totalPrice = Form.useWatch(
+    (values) => {
+      const { user, year, note, ...rest } = values
+      let total = 0
+      for (const arrayKey in rest) {
+        const array = rest[arrayKey]
+        for (const id of array) {
+          const price = flattenServiceItemMap.get(id)
+          total += price || 0
+        }
+      }
+      return total
+    },
+    { form },
+  )
 
   const handleSubmit = async () => {
     const values = await form.validateFields()
@@ -51,7 +79,7 @@ function ServiceModal() {
       title: '項目',
       render: (_, { category, serviceItems }) => {
         return (
-          <Form.Item name={category} className="mb-0">
+          <Form.Item initialValue={[]} name={category} className="mb-0">
             <Checkbox.Group
               options={serviceItems.map((item) => ({
                 label: item.name,
@@ -67,7 +95,7 @@ function ServiceModal() {
   return (
     <>
       <Modal
-        title={'信眾服務'}
+        title={believers[0]?.name || '信眾服務'}
         onCancel={onClose}
         open={isOpen}
         width={900}
@@ -90,11 +118,11 @@ function ServiceModal() {
             >
               <Input />
             </Form.Item>
-            <Form.Item initialValue="0" name="totalPrice" label="總金額">
-              <Input disabled />
+            <Form.Item label="總金額">
+              <Input value={totalPrice} disabled />
             </Form.Item>
-            <Form.Item name="user" initialValue={name} label="經辦員">
-              <Input disabled />
+            <Form.Item label="經辦員">
+              <Input value={name} disabled />
             </Form.Item>
 
             <div className="col-span-3">

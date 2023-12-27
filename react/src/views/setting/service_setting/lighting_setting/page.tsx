@@ -1,3 +1,7 @@
+import CreateLightDetailModal from './_components/CreateLightDetailModal'
+import CreateLightModal from './_components/CreateLightModal'
+import DeleteLightButton from './_components/DeleteLightButton'
+import DeleteLightDetailButton from './_components/DeleteLightDetailButton'
 import Loading from '@/components/Loading'
 import MyCard from '@/components/MyCard'
 import DropdownButton from '@/components/buttons/DropdownButton'
@@ -11,10 +15,6 @@ import { TrpcInputs, TrpcOutputs } from '@/types/trpc'
 import { Form, Input, Table } from 'antd'
 import { ColumnsType } from 'antd/es/table'
 import { useMemo, useState } from 'react'
-import CreateLightDetailModal from './_components/CreateLightDetailModal'
-import CreateLightModal from './_components/CreateLightModal'
-import DeleteLightButton from './_components/DeleteLightButton'
-import DeleteLightDetailButton from './_components/DeleteLightDetailButton'
 
 type DataType = GetArrType<TrpcOutputs['service']['getLights']>
 
@@ -173,7 +173,7 @@ const LightingSetting = () => {
               </div>
               <Form form={form}>
                 <Table
-                  scroll={{ y: windowHeight - 300 }}
+                  scroll={{ y: windowHeight - 250 }}
                   bordered
                   size="small"
                   dataSource={data || []}
@@ -185,6 +185,7 @@ const LightingSetting = () => {
                       setEditKey(null)
                     },
                   }}
+                  pagination={false}
                 />
               </Form>
             </div>
@@ -357,7 +358,7 @@ const Right = ({
         onClose={() => setIsCreateModalOpen(false)}
       />
       <div>
-        <div className="flex  justify-around mb-2">
+        <div className="mb-2  flex justify-around">
           <h1>燈座編號</h1>
           <ExtendedButton
             disabled={!lightId}
@@ -371,11 +372,12 @@ const Right = ({
         </div>
         <Form form={form}>
           <Table
-            scroll={{ y: windowHeight - 300 }}
+            scroll={{ y: windowHeight - 250 }}
             bordered
             size="small"
             dataSource={detailsData}
             columns={detailsColumns}
+            pagination={false}
           />
         </Form>
       </div>

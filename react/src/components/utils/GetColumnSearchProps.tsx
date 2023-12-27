@@ -1,11 +1,13 @@
 import ExtendedButton from '@/components/buttons/ExtendedButton'
 import { useTheme } from '@/store/useTheme'
 import { SearchOutlined } from '@ant-design/icons'
-import { Input } from 'antd'
+import { Input, InputRef } from 'antd'
 import type { FilterDropdownProps } from 'antd/lib/table/interface'
+import { useRef } from 'react'
 
 export const GetColumnSearchProps = () => {
   const { colorPrimary } = useTheme()
+  const inputRef = useRef<InputRef>(null)
 
   return {
     filterDropdown: (props: FilterDropdownProps) => {
@@ -17,6 +19,7 @@ export const GetColumnSearchProps = () => {
       return (
         <div className="p-2">
           <Input
+            ref={inputRef}
             onChange={(e) =>
               setSelectedKeys(e.target.value ? [e.target.value] : [])
             }

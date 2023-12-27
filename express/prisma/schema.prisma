@@ -32,6 +32,7 @@ model User {
 
   rolesOnUsers    RolesOnUsers[]
   createBelievers Believer[]
+  orders          Order[]
 }
 
 model Api {
@@ -198,6 +199,9 @@ model Order {
   position Int
 
   status String
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   believerId String
   believer   Believer @relation(fields: [believerId], references: [id], onDelete: Cascade)

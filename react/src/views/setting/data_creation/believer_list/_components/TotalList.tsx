@@ -1,7 +1,7 @@
 import DropdownButton from '@/components/buttons/DropdownButton'
 import ExtendedButton from '@/components/buttons/ExtendedButton'
 import { useServiceDrawerStore } from '@/components/modals/ServiceDrawer'
-
+import { useServiceModalStore } from '@/components/modals/ServiceModal'
 import { GetColumnSearchProps } from '@/components/utils/GetColumnSearchProps'
 import { useWindowInfo } from '@/hooks/useHook'
 import { useAntd } from '@/provider/AntdProvider'
@@ -130,7 +130,7 @@ const Columns: (config?: {
   const { message, modal } = useAntd()
   const navigate = useNavigate()
   const utils = trpcQuery.useUtils()
-  const { onOpen } = useServiceDrawerStore()
+  const { onOpen } = useServiceModalStore()
 
   const { mutate: deleteBeliever } =
     trpcQuery.believer.deleteBeliever.useMutation({
@@ -229,7 +229,7 @@ const Columns: (config?: {
             <ExtendedButton type="primary" onClick={() => navigate(`${id}`)}>
               修改
             </ExtendedButton>
-            <ExtendedButton type="success" onClick={() => onOpen()}>
+            <ExtendedButton type="success" onClick={() => onOpen({ id, name })}>
               服務
             </ExtendedButton>
             <ExtendedButton
