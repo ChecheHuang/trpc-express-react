@@ -14,7 +14,8 @@ type ThemeStoreType = {
   changeSize: (size: SizeType) => void
 }
 
-const defaultColor = localStorage.getItem('colorPrimary') || '#1677ff'
+const defaultColor = localStorage.getItem('colorPrimary') || '#a71b4f81'
+// const defaultColor = localStorage.getItem('colorPrimary') || '#1677ff'
 export const useTheme = create<ThemeStoreType>((set) => ({
   mode: 'dark',
   toggleMode() {

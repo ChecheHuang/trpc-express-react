@@ -2,77 +2,283 @@
     {
         "category": "點燈",
         "serviceItems": {
-          "create": [
+            "create": [
                 {
-              "year": 112,
-              "name": "光明燈-A",
-              "price": 1500,
-              "serviceItemDetails": {
-                "create": [
+                    "year": 112,
+                    "name": "平安",
+                    "price": 500,
+                    "serviceItemDetails": {
+                        "create": [
                             {
-                    "name": "光右-1",
-                    "start": 1,
-                    "end": 6
+                                "rank": 1,
+                                "name": "平01",
+                                "start": 1,
+                                "end": 6
                             },
                             {
-                    "name": "光左-1",
-                    "start": 1,
-                    "end": 7
+                                "rank": 2,
+                                "name": "平02",
+                                "start": 1,
+                                "end": 7
                             }
                         ]
                     }
                 },
                 {
-              "year": 112,
-              "name": "文昌燈",
-              "price": 500,
-              "serviceItemDetails": {
-                "create": [
+                    "year": 112,
+                    "name": "光明",
+                    "price": 500,
+                    "serviceItemDetails": {
+                        "create": [
                             {
-                    "name": "文右-1",
-                    "start": 1,
-                    "end": 6
+                                "rank": 1,
+                                "name": "光01",
+                                "start": 1,
+                                "end": 6
                             },
                             {
-                    "name": "文左-1",
-                    "start": 1,
-                    "end": 7
+                                "rank": 2,
+                                "name": "光02",
+                                "start": 1,
+                                "end": 7
                             }
                         ]
                     }
                 },
                 {
-              "year": 112,
-              "name": "財神燈",
-              "price": 500,
-              "serviceItemDetails": {
-                "create": [
+                    "year": 112,
+                    "name": "元辰",
+                    "price": 500,
+                    "serviceItemDetails": {
+                        "create": [
                             {
-                    "name": "財右-1",
-                    "start": 1,
-                    "end": 6
+                                "rank": 1,
+                                "name": "元01",
+                                "start": 1,
+                                "end": 6
                             },
                             {
-                    "name": "財左-1",
-                    "start": 1,
-                    "end": 7
+                                "rank": 2,
+                                "name": "元02",
+                                "start": 1,
+                                "end": 7
                             }
                         ]
                     }
                 },
                 {
-              "year": 112,
-              "name": "光明燈-B",
-              "price": 800
+                    "year": 112,
+                    "name": "文昌",
+                    "price": 500,
+                    "serviceItemDetails": {
+                        "create": [
+                            {
+                                "rank": 1,
+                                "name": "文01",
+                                "start": 1,
+                                "end": 6
+                            }
+                        ]
+                    }
+                },
+                {
+                    "year": 112,
+                    "name": "財神",
+                    "price": 500,
+                    "serviceItemDetails": {
+                        "create": [
+                            {
+                                "rank": 1,
+                                "name": "財01",
+                                "start": 1,
+                                "end": 6
+                            }
+                        ]
+                    }
+                },
+                {
+                    "year": 112,
+                    "name": "姻緣",
+                    "price": 500,
+                    "serviceItemDetails": {
+                        "create": [
+                            {
+                                "rank": 1,
+                                "name": "姻01",
+                                "start": 1,
+                                "end": 6
+                            }
+                        ]
+                    }
+                },
+                {
+                    "year": 112,
+                    "name": "太歲",
+                    "price": 500,
+                    "serviceItemDetails": {
+                        "create": [
+                            {
+                                "rank": 1,
+                                "name": "太01",
+                                "start": 1,
+                                "end": 6
+                            }
+                        ]
+                    }
+                },
+                {
+                    "year": 112,
+                    "name": "佛外",
+                    "price": 1000,
+                    "serviceItemDetails": {
+                        "create": [
+                            {
+                                "rank": 1,
+                                "name": "01",
+                                "start": 1,
+                                "end": 6
+                            }
+                        ]
+                    }
+                },
+                {
+                    "year": 112,
+                    "name": "佛內",
+                    "price": 3000,
+                    "serviceItemDetails": {
+                        "create": [
+                            {
+                                "rank": 1,
+                                "name": "01",
+                                "start": 1,
+                                "end": 6
+                            }
+                        ]
+                    }
+                },
+                {
+                    "year": 112,
+                    "name": "祭改",
+                    "price": 0,
+                    "serviceItemDetails": {
+                        "create": [
+                            {
+                                "rank": 1,
+                                "name": "改",
+                                "start": 1,
+                                "end": 999
+                            }
+                        ]
+                    }
+                },
+                {
+                    "year": 112,
+                    "name": "延壽",
+                    "price": 300,
+                    "serviceItemDetails": {
+                        "create": [
+                            {
+                                "rank": 1,
+                                "name": "壽",
+                                "start": 1,
+                                "end": 999
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "category": "超渡",
+        "serviceItems": {
+            "create": [
+                {
+                    "year": 112,
+                    "name": "祖先",
+                    "price": 2000,
+                    "serviceItemDetails": {
+                        "create": [
+                            {
+                                "rank": 1,
+                                "name": "祖先",
+                                "start": 1,
+                                "end": 999
+                            }
+                        ]
+                    }
+                },
+                {
+                    "year": 112,
+                    "name": "冤親",
+                    "price": 2000,
+                    "serviceItemDetails": {
+                        "create": [
+                            {
+                                "rank": 1,
+                                "name": "冤親",
+                                "start": 1,
+                                "end": 999
+                            }
+                        ]
+                    }
+                },
+                {
+                    "year": 112,
+                    "name": "嬰靈",
+                    "price": 2000,
+                    "serviceItemDetails": {
+                        "create": [
+                            {
+                                "rank": 1,
+                                "name": "嬰靈",
+                                "start": 1,
+                                "end": 999
+                            }
+                        ]
+                    }
+                },
+                {
+                    "year": 112,
+                    "name": "其他",
+                    "price": 2000,
+                    "serviceItemDetails": {
+                        "create": [
+                            {
+                                "rank": 1,
+                                "name": "其他",
+                                "start": 1,
+                                "end": 999
+                            }
+                        ]
+                    }
+                },
+                {
+                    "year": 112,
+                    "name": "普渡-餐",
+                    "price": 2000,
+                    "serviceItemDetails": {
+                        "create": [
+                            {
+                                "rank": 1,
+                                "name": "01",
+                                "start": 1,
+                                "end": 10
+                            },
+                            {
+                                "rank": 2,
+                                "name": "02",
+                                "start": 1,
+                                "end": 10
+                            }
+                        ]
+                    }
                 }
             ]
         }
     },
     {
         "category": "拜斗"
-    },
-    {
-        "category": "普渡"
     },
     {
         "category": "祈福"

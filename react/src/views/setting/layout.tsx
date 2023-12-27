@@ -1,12 +1,13 @@
-import Header from './_components/Header'
-import Sidebar from './_components/Sidebar'
 import { useWindowInfo } from '@/hooks/useHook'
 import { cn } from '@/lib/utils'
+import ModalProvider from '@/provider/ModalProvider'
 import { useTheme } from '@/store/useTheme'
-import React, { useEffect, useState, createRef } from 'react'
+import React, { createRef, useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import SimpleBar from 'simplebar-react'
 import 'simplebar-react/dist/simplebar.min.css'
+import Header from './_components/Header'
+import Sidebar from './_components/Sidebar'
 
 const Layout = () => {
   const { mode } = useTheme()
@@ -48,7 +49,9 @@ const Layout = () => {
             }}
             scrollableNodeProps={{ ref: scrollableNodeRef }}
           >
-            <Outlet />
+            <ModalProvider>
+              <Outlet />
+            </ModalProvider>
           </SimpleBar>
         </main>
       </section>

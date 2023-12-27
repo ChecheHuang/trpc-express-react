@@ -1,6 +1,6 @@
 import { generateRegexPath } from '@/config/regex'
 import router from '@/router/router'
-import { useUserStore, UserStoreType } from '@/store/useUser'
+import { UserStoreType, useUserStore } from '@/store/useUser'
 import type { MenuProps } from 'antd'
 import { useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
@@ -115,7 +115,7 @@ function convertRoutesToMenu(
     const menuItem: MenuItem = {
       key: children ? path + '/layout' : path,
       icon,
-      label: route.name,
+      label: backEndRoute?.name ? backEndRoute.name : route.name,
     }
     if (children) {
       const result = convertRoutesToMenu(children, regexObjArr)

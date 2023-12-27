@@ -1,14 +1,20 @@
 import Form from './_components/Form'
 import { cn } from '@/lib/utils'
-import { trpcQuery } from '@/provider/TrpcProvider'
+import { trpcClient, trpcQuery } from '@/provider/TrpcProvider'
 import { Image } from 'antd'
+import { useEffect } from 'react'
 
 const Login = () => {
-  trpcQuery.auth.onLogin.useSubscription(undefined, {
-    onData: (message) => {
-      console.log('websocket', message)
-    },
-  })
+  useEffect(() => {
+    const connection = trpcClient.auth.onLogin.subscribe(undefined, {
+      onData: (message) => {
+        console.log('websocket', message)
+      },
+    })
+    return () => {
+      connection.unsubscribe()
+    }
+  }, [])
 
   return (
     <div

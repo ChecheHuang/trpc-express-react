@@ -1,5 +1,7 @@
 import DropdownButton from '@/components/buttons/DropdownButton'
 import ExtendedButton from '@/components/buttons/ExtendedButton'
+import { useServiceDrawerStore } from '@/components/modals/ServiceDrawer'
+
 import { GetColumnSearchProps } from '@/components/utils/GetColumnSearchProps'
 import { useWindowInfo } from '@/hooks/useHook'
 import { useAntd } from '@/provider/AntdProvider'
@@ -10,6 +12,7 @@ import { Table } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { TableProps } from 'antd/lib/table/InternalTable'
 import type { SorterResult } from 'antd/lib/table/interface'
+import lunisolar from 'lunisolar'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
@@ -104,7 +107,7 @@ const TotalList = () => {
         size="small"
         loading={isLoading}
         onChange={handleChange}
-        scroll={{ x: tableWidth, y: windowHeight - 260 }}
+        scroll={{ x: tableWidth * 1.3, y: windowHeight - 260 }}
         columns={Columns()}
         dataSource={data?.data}
         pagination={{
@@ -127,6 +130,7 @@ const Columns: (config?: {
   const { message, modal } = useAntd()
   const navigate = useNavigate()
   const utils = trpcQuery.useUtils()
+  const { onOpen } = useServiceDrawerStore()
 
   const { mutate: deleteBeliever } =
     trpcQuery.believer.deleteBeliever.useMutation({
@@ -149,6 +153,7 @@ const Columns: (config?: {
     },
     {
       title: '姓名',
+      width: 100,
       dataIndex: 'name',
       render: (_, { name, id, parentId }) => {
         return (
@@ -169,10 +174,31 @@ const Columns: (config?: {
     {
       title: '生日',
       dataIndex: 'birthday',
-      width: 80,
+      width: 130,
+    },
+    {
+      title: '生肖',
+      render: (_, { birthday }) => (
+        <div>{lunisolar(birthday).format('cZ')}</div>
+      ),
+    },
+    {
+      title: '八字',
+      width: 130,
+      render: (_, { birthday }) => (
+        <div>{lunisolar(birthday).format('cY cM cD cH')}</div>
+      ),
+    },
+    {
+      title: '農曆年',
+      width: 160,
+      render: (_, { birthday }) => (
+        <div>{lunisolar(birthday).format('cY年 lM(lL)lD lH時')}</div>
+      ),
     },
     {
       title: '電話',
+      width: 100,
       dataIndex: 'phone',
       ...GetColumnSearchProps(),
     },
@@ -190,10 +216,12 @@ const Columns: (config?: {
       title: '地址',
       dataIndex: 'address',
       sorter: true,
+      width: 100,
       ...GetColumnSearchProps(),
     },
     {
       title: '操作',
+      fixed: 'right',
       width,
       render: (_, { id, name }) => {
         return (
@@ -201,7 +229,9 @@ const Columns: (config?: {
             <ExtendedButton type="primary" onClick={() => navigate(`${id}`)}>
               修改
             </ExtendedButton>
-            <ExtendedButton type="default">服務</ExtendedButton>
+            <ExtendedButton type="success" onClick={() => onOpen()}>
+              服務
+            </ExtendedButton>
             <ExtendedButton
               onClick={() => {
                 modal?.confirm({

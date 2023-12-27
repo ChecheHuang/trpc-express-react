@@ -3,13 +3,12 @@ import { useAntd } from '@/provider/AntdProvider'
 import { trpcQuery } from '@/provider/TrpcProvider'
 import { CrownOutlined } from '@ant-design/icons'
 import { Button, Form, Input, Select } from 'antd'
-import React from 'react'
 import { useNavigate } from 'react-router-dom'
 
-const LoginForm= () => {
+const LoginForm = () => {
   const navigate = useNavigate()
   const { message } = useAntd()
-  const { mutate: login } = trpcQuery.auth.login.useMutation({
+  const { mutate: login, isLoading } = trpcQuery.auth.login.useMutation({
     onSuccess: (jwt) => {
       storage.set('jwt', jwt)
       message.success('登入成功')
@@ -64,7 +63,7 @@ const LoginForm= () => {
           />
         </Form.Item>
         <Form.Item>
-          <Button block type="primary" htmlType="submit">
+          <Button loading={isLoading} block type="primary" htmlType="submit">
             登入
           </Button>
         </Form.Item>

@@ -1,9 +1,8 @@
-import BeforeChangeRoute from './components/BeforeChangeRoute'
 import AntdProvider from '@/provider/AntdProvider'
-import ModalProvider from '@/provider/ModalProvider'
 import TrpcProvider from '@/provider/TrpcProvider'
 import router from '@/router/router'
-import { useRoutes, BrowserRouter } from 'react-router-dom'
+import { BrowserRouter, useRoutes } from 'react-router-dom'
+import BeforeChangeRoute from './components/BeforeChangeRoute'
 
 const Routes = () => {
   const routes = useRoutes(router)
@@ -16,9 +15,7 @@ function App() {
       <AntdProvider>
         <BrowserRouter>
           <BeforeChangeRoute>
-            <ModalProvider>
-              <Routes />
-            </ModalProvider>
+            <Routes />
           </BeforeChangeRoute>
         </BrowserRouter>
       </AntdProvider>

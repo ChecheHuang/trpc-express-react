@@ -1,7 +1,7 @@
-import './plugin'
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import * as XLSX from 'xlsx'
+import './plugin'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -87,4 +87,8 @@ export function dataURLToBlob(dataURL: string) {
     u8arr[n] = bstr.charCodeAt(n)
   }
   return new Blob([u8arr], { type: mime })
+}
+
+export const onCopy = (description: string) => {
+  navigator.clipboard.writeText(description)
 }

@@ -86,6 +86,7 @@ const CreateLightDetailModal = ({
         <Form.Item
           name="start"
           label="開始"
+          initialValue={1}
           rules={[{ required: true, message: '請輸入開始' }]}
         >
           <NumberInput name="start" form={addForm} />
@@ -93,6 +94,7 @@ const CreateLightDetailModal = ({
         <Form.Item
           name="end"
           label="結束"
+          initialValue={999}
           rules={[{ required: true, message: '請輸入結束' }]}
         >
           <NumberInput name="end" form={addForm} />

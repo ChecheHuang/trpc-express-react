@@ -150,7 +150,7 @@ const Columns: (config?: {
       },
     },
     {
-      title: '姓名',
+      title: '戶長',
       dataIndex: 'name',
       render: (_, { name, id }) => {
         return <Link to={`${id}`}>{name}</Link>

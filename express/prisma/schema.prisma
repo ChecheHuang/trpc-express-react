@@ -121,6 +121,7 @@ model TaiwanCity {
 
 model Believer {
   id       String   @id @default(cuid())
+  group    String   @default("")
   name     String   @default("") // 姓名
   gender   String   @default("") // 性别
   birthday DateTime @default(now()) // 生日
@@ -138,7 +139,10 @@ model Believer {
   updatedAt DateTime @updatedAt
 
   createdUserId String // 建立者 id
-  createdUser   User   @relation(fields: [createdUserId], references: [id]) // 建立者
+  createdUser   User    @relation(fields: [createdUserId], references: [id]) // 建立者
+  isDelete      Boolean @default(false)
+
+  orders Order[]
 }
 
 model Service {
@@ -169,9 +173,10 @@ model ServiceItem {
 
 model ServiceItemDetail {
   id    String @id @default(cuid())
-  name  String @unique // 燈座名稱
+  rank  Int    @default(1) // 排序
+  name  String // 燈座名稱
   start Int    @default(1) // 開始位置
-  end   Int // 結束位置
+  end   Int    @default(999) // 結束位置
 
   serviceItemId String // 服務項目 id
 
@@ -179,4 +184,24 @@ model ServiceItemDetail {
   updatedAt DateTime @updatedAt
 
   serviceItem ServiceItem @relation(fields: [serviceItemId], references: [id], onDelete: Cascade) // 服務項目
+
+  orders Order[]
+
+  @@unique([serviceItemId, rank])
+}
+
+model Order {
+  id       String @id @default(cuid())
+  year     Int
+  price    Int
+  note     String @default("")
+  position Int
+
+  status String
+
+  believerId String
+  believer   Believer @relation(fields: [believerId], references: [id], onDelete: Cascade)
+
+  ServiceItemDetailId String
+  ServiceItemDetail   ServiceItemDetail @relation(fields: [ServiceItemDetailId], references: [id], onDelete: Cascade)
 }

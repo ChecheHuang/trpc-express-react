@@ -3,23 +3,22 @@ import { Form, Input, Radio } from 'antd'
 import { FormInstance, InputRef } from 'antd/lib'
 import { useEffect, useRef, useState } from 'react'
 
-type CustomRadioProps = {
+type CustomRadioGroupProps = {
   form: FormInstance
   name: string
   label: string
   options: string[]
-  required: boolean
+  required?: boolean
 }
 
-const CustomRadio = ({
+const CustomRadioGroup = ({
   form,
   name,
   label,
   options,
   required,
-}: CustomRadioProps) => {
+}: CustomRadioGroupProps) => {
   const radioValue = Form.useWatch(name, form) || ''
-  console.log(radioValue)
   const [otherInputValue, setOtherInputValue] = useState<string>('')
 
   const otherInputRef = useRef<InputRef>(null)
@@ -35,11 +34,6 @@ const CustomRadio = ({
     if (radioValue === otherInputValue) return
     setOtherInputValue(radioValue)
   }, [radioValue, isInputDisabled, otherInputValue])
-  //   useEffect(() => {
-  //     if (otherInputValue === radioValue) {
-  //       otherInputRef.current?.focus()
-  //     }
-  //   }, [radioValue, otherInputValue])
 
   return (
     <>
@@ -60,12 +54,20 @@ const CustomRadio = ({
                 : []
             }
           >
-            <Radio.Group options={[...remainingElements, lastElement]} />
+            <Radio.Group
+              onChange={(e) => {
+                if (!remainingElements.includes(e.target.value)) {
+                  otherInputRef.current?.focus()
+                  return
+                }
+                setOtherInputValue('')
+              }}
+              options={[...remainingElements, lastElement]}
+            />
           </Form.Item>
           <Form.Item className="flex-1">
             <Input
               ref={otherInputRef}
-              disabled={isInputDisabled}
               value={otherInputValue}
               onFocus={() => form.setFieldValue(name, otherInputValue)}
               onChange={(e) => {
@@ -80,4 +82,4 @@ const CustomRadio = ({
   )
 }
 
-export default CustomRadio
+export default CustomRadioGroup

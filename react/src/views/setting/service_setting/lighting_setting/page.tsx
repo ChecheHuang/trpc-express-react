@@ -4,6 +4,7 @@ import DropdownButton from '@/components/buttons/DropdownButton'
 import ExtendedButton from '@/components/buttons/ExtendedButton'
 import Container from '@/components/container/Container'
 import NumberInput from '@/components/form/NumberInput'
+import { useWindowInfo } from '@/hooks/useHook'
 import { useAntd } from '@/provider/AntdProvider'
 import { trpcQuery } from '@/provider/TrpcProvider'
 import { TrpcInputs, TrpcOutputs } from '@/types/trpc'
@@ -32,6 +33,7 @@ const LightingSetting = () => {
     },
   })
   const { message } = useAntd()
+  const { windowHeight } = useWindowInfo()
 
   const handleSubmit = async () => {
     try {
@@ -71,7 +73,7 @@ const LightingSetting = () => {
     {
       title: '價格',
       dataIndex: 'price',
-      width: '20%',
+      width: '25%',
       render: (_, props) => {
         if (props.key === editKey) {
           return (
@@ -171,13 +173,16 @@ const LightingSetting = () => {
               </div>
               <Form form={form}>
                 <Table
+                  scroll={{ y: windowHeight - 300 }}
                   bordered
+                  size="small"
                   dataSource={data || []}
                   columns={columns}
                   rowSelection={{
                     type: 'radio',
                     onChange: (selectedRowKeys: React.Key[]) => {
                       setShowLightKey(selectedRowKeys[0] as string)
+                      setEditKey(null)
                     },
                   }}
                 />
@@ -205,6 +210,7 @@ const Right = ({
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [form] = Form.useForm<TrpcInputs['service']['updateLightDetail']>()
   const { message } = useAntd()
+  const { windowHeight } = useWindowInfo()
   const utils = trpcQuery.useUtils()
   const { mutate: updateLightDetail } =
     trpcQuery.service.updateLightDetail.useMutation({
@@ -234,11 +240,10 @@ const Right = ({
   const detailsColumns: ColumnsType<GetArrType<DataType['lightDetails']>> = [
     {
       title: '排序',
+      dataIndex: 'rank',
       rowScope: 'row',
+      align: 'center',
       width: '13%',
-      render: (_, props, index) => {
-        return <div>{index + 1}</div>
-      },
     },
     {
       title: '燈座名稱',
@@ -365,7 +370,13 @@ const Right = ({
           </ExtendedButton>
         </div>
         <Form form={form}>
-          <Table bordered dataSource={detailsData} columns={detailsColumns} />
+          <Table
+            scroll={{ y: windowHeight - 300 }}
+            bordered
+            size="small"
+            dataSource={detailsData}
+            columns={detailsColumns}
+          />
         </Form>
       </div>
     </>

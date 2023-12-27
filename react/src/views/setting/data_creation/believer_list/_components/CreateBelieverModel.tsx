@@ -1,5 +1,5 @@
 import AddressInput from '@/components/form/AddressInput'
-import CustomRadio from '@/components/form/CustomRadio'
+import CustomRadioGroup from '@/components/form/CustomRadioGroup'
 import { useAntd } from '@/provider/AntdProvider'
 import { trpcQuery } from '@/provider/TrpcProvider'
 import { TrpcInputs } from '@/types/trpc'
@@ -11,7 +11,6 @@ import {
   Form,
   Input,
   Modal,
-  Radio,
   Select,
   Space,
 } from 'antd'
@@ -58,8 +57,7 @@ const CreateBelieverModel = ({
   const handleSubmit = async () => {
     try {
       const validateValues = await form.validateFields()
-      console.log(validateValues)
-      return
+
       const { familyMembers, phone, city, area, address, ...values } =
         validateValues
       const isParent = !familyMembers.some(
@@ -92,28 +90,32 @@ const CreateBelieverModel = ({
     <>
       <Modal
         title="新增信眾"
-        open={true}
-        // open={createModalOpen}
-        onOk={handleSubmit}
         onCancel={handleCancel}
+        open={createModalOpen}
         footer={[
           <Button key="cancel" onClick={handleCancel}>
             取消
           </Button>,
-          <Button key="ok" type="primary" onClick={handleSubmit}>
+          <Button
+            loading={createBelieverLoading}
+            key="ok"
+            type="primary"
+            onClick={handleSubmit}
+          >
             確定
           </Button>,
         ]}
         width={1200}
       >
         <Form
-          labelCol={{ span: 4 }}
+          labelCol={{ flex: '110px' }}
           form={form}
           initialValues={{
             name: '王曉明',
             birthday: dayjs(),
             phone: '0912345678',
-            gender: '哈哈哈',
+            checkbox: ['蘋果', '自己想吃的水果'],
+            gender: '不明',
             city: '台北市',
             area: '中正區',
             address: '忠孝東路',
@@ -141,7 +143,8 @@ const CreateBelieverModel = ({
             >
               <Input placeholder="請輸入姓名" />
             </Form.Item>
-            <CustomRadio
+
+            <CustomRadioGroup
               form={form}
               name="gender"
               label="性別"
@@ -170,7 +173,7 @@ const CreateBelieverModel = ({
                 <div>
                   家庭成員
                   <br />
-                  (打勾為戶長)
+                  (勾選為戶長)
                 </div>
               }
             >

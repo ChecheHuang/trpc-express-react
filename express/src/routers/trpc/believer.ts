@@ -244,8 +244,6 @@ export const believer = router({
       },
     })
 
-    // console.cuslog(data)
-
     if (!data) throw new TRPCError({ code: 'NOT_FOUND', message: '找不到該客戶' })
     const { birthday, children, parent, ...believer } = data
 

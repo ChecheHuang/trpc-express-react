@@ -1,14 +1,14 @@
-import { trpcQuery } from '@/provider/TrpcProvider'
 import { Cascader, Form, Input, InputRef } from 'antd'
 import { FormInstance } from 'antd/lib'
 import { useRef } from 'react'
+import addressOptions from './addressOptions.json'
 
 type AddressInputProps = {
   form: FormInstance
 }
 
 const AddressInput = ({ form }: AddressInputProps) => {
-  const { data: addressOptions } = trpcQuery.options.cityOptions.useQuery()
+  // const { data: addressOptions } = trpcQuery.options.cityOptions.useQuery()
   const addressInputRef = useRef<InputRef>(null)
   const customValue = Form.useWatch((values) => {
     if (!values.city || !values.area) return undefined
