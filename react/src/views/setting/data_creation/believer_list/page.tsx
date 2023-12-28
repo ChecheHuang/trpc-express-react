@@ -1,10 +1,10 @@
+import BelieverByFamilyList from './_components/BelieverByFamilyList'
+import BelieverList from './_components/BelieverList'
+import CreateBelieverModel from './_components/CreateBelieverModel'
 import Container from '@/components/container/Container'
 import { AndroidOutlined, AppleOutlined } from '@ant-design/icons'
 import { Button, Tabs } from 'antd'
 import { useState } from 'react'
-import ByFamilyList from './_components/ByFamilyList'
-import CreateBelieverModel from './_components/CreateBelieverModel'
-import TotalList from './_components/TotalList'
 
 const BelieverListPage = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false)
@@ -34,7 +34,7 @@ const BelieverListPage = () => {
               label: '信眾資料',
               children: (
                 <>
-                  <TotalList />
+                  <BelieverList />
                 </>
               ),
               icon: <AppleOutlined />,
@@ -44,7 +44,7 @@ const BelieverListPage = () => {
               label: '戶口信眾資料',
               children: (
                 <>
-                  <ByFamilyList />
+                  <BelieverByFamilyList />
                 </>
               ),
               icon: <AndroidOutlined />,

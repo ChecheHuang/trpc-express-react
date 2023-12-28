@@ -94,22 +94,8 @@ export const service = router({
   createLightDetail: privateProcedure
     .input(z.object({ serviceItemId: z.string(), name: z.string(), start: z.number(), end: z.number() }))
     .mutation(async ({ input }) => {
-      const lastRank = await prismadb.serviceItemDetail.findFirst({
-        where: {
-          serviceItemId: input.serviceItemId,
-        },
-        orderBy: {
-          rank: 'desc',
-        },
-        select: {
-          rank: true,
-        },
-      })
-      const currentRank = lastRank ? lastRank.rank + 1 : 1
-
       const lightService = await prismadb.serviceItemDetail.create({
         data: {
-          rank: currentRank,
           name: input.name,
           start: input.start,
           end: input.end,
@@ -138,29 +124,42 @@ export const service = router({
       },
     })
   }),
-  getServices: privateProcedure.query(async () => {
-    const service = await prismadb.service.findMany({
-      select: {
-        id: true,
-        category: true,
-        serviceItems: {
-          select: {
-            id: true,
-            name: true,
-            price: true,
+  getServices: privateProcedure
+    .input(
+      z
+        .object({
+          year: z.number(),
+        })
+        .optional()
+        .default({ year: dayjs().year() - 1911 })
+    )
+    .query(async ({ input }) => {
+      const { year } = input
+      const service = await prismadb.service.findMany({
+        select: {
+          id: true,
+          category: true,
+          serviceItems: {
+            where: {
+              year,
+            },
+            select: {
+              id: true,
+              name: true,
+              price: true,
+            },
           },
         },
-      },
-      orderBy: {
-        id: 'asc',
-      },
-    })
+        orderBy: {
+          id: 'asc',
+        },
+      })
 
-    const result = service.map((item) => ({
-      key: item.id,
-      ...item,
-    }))
+      const result = service.map((item) => ({
+        key: item.id,
+        ...item,
+      }))
 
-    return result
-  }),
+      return result
+    }),
 })

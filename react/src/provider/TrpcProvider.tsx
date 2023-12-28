@@ -68,10 +68,6 @@ const trpcSetting: CreateTRPCClientOptions<AppRouter> = {
               })
               return reFetchRes
             }
-            if (res.status === 401) {
-              storage.clear()
-              return res
-            }
             message.destroy()
             message.error(errorMessage, 10)
             return res

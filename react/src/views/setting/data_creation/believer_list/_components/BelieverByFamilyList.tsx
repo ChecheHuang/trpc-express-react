@@ -21,12 +21,12 @@ type QueryDataType = TrpcInputs['believer']['getBelieversByFamily']
 const initQueryData: QueryDataType = {
   _page: '1',
   _limit: '10',
-  orderKey: 'id',
+  orderKey: 'rank',
   orderValue: 'desc',
 }
 const width = 60
 
-const ByFamilyList = () => {
+const BelieverByFamilyList = () => {
   const [queryData, setQueryData] = useState<QueryDataType>(initQueryData)
   const { data, isLoading } = trpcQuery.believer.getBelieversByFamily.useQuery(
     queryData,
@@ -120,7 +120,7 @@ const ByFamilyList = () => {
   )
 }
 
-export default ByFamilyList
+export default BelieverByFamilyList
 
 const Columns: (config?: {
   width: number
@@ -141,13 +141,9 @@ const Columns: (config?: {
 
   const col: ColumnsType<DataType> = [
     {
-      title: 'ID',
-      dataIndex: 'id',
-      fixed: 'left',
+      title: '排序',
+      dataIndex: 'rank',
       sorter: true,
-      render: (_, { id }) => {
-        return <div className=" truncate">{id}</div>
-      },
     },
     {
       title: '戶長',

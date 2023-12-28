@@ -105,10 +105,10 @@ const CreateBelieverModel = ({
             確定
           </Button>,
         ]}
-        width={1200}
+        width={800}
       >
         <Form
-          labelCol={{ flex: '110px' }}
+          labelCol={{ flex: '100px' }}
           form={form}
           initialValues={{
             name: '王曉明',
@@ -166,9 +166,10 @@ const CreateBelieverModel = ({
             <Form.Item label="電話" name="phone">
               <Input />
             </Form.Item>
-            <AddressInput form={form} />
+            <AddressInput className="col-span-full" form={form} />
 
             <Form.Item
+              className=" col-span-full"
               label={
                 <div>
                   家庭成員

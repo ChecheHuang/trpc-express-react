@@ -1,13 +1,15 @@
+import addressOptions from './addressOptions.json'
+import { cn } from '@/lib/utils'
 import { Cascader, Form, Input, InputRef } from 'antd'
 import { FormInstance } from 'antd/lib'
 import { useRef } from 'react'
-import addressOptions from './addressOptions.json'
 
 type AddressInputProps = {
+  className?: string
   form: FormInstance
 }
 
-const AddressInput = ({ form }: AddressInputProps) => {
+const AddressInput = ({ form, className }: AddressInputProps) => {
   // const { data: addressOptions } = trpcQuery.options.cityOptions.useQuery()
   const addressInputRef = useRef<InputRef>(null)
   const customValue = Form.useWatch((values) => {
@@ -16,7 +18,7 @@ const AddressInput = ({ form }: AddressInputProps) => {
   }, form)
   return (
     <>
-      <Form.Item label="地址" className="required">
+      <Form.Item label="地址" className={cn('required', className)}>
         <Form.Item
           className="mb-2"
           rules={[{ required: true, message: '請選擇縣市' }]}

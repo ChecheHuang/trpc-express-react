@@ -25,6 +25,7 @@ model Role {
 
 model User {
   id        String   @id @default(cuid())
+  rank      Int      @unique @default(autoincrement())
   name      String   @unique
   password  String
   createdAt DateTime @default(now())
@@ -37,6 +38,7 @@ model User {
 
 model Api {
   id                 String  @id @default(cuid())
+  rank               Int     @unique @default(autoincrement())
   router             String  @default("")
   name               String  @default("")
   swaggerMethod      String  @default("")
@@ -53,6 +55,7 @@ model Api {
 
 model Route {
   id       String  @id @default(cuid())
+  rank     Int     @unique @default(autoincrement())
   name     String
   path     String  @unique
   parentId String?
@@ -114,6 +117,7 @@ model RolesOnApis {
 
 model TaiwanCity {
   id        String   @id @default(cuid())
+  rank      Int      @unique @default(autoincrement())
   name      String   @unique
   areas     Json     @default("[]")
   createdAt DateTime @default(now())
@@ -122,7 +126,8 @@ model TaiwanCity {
 
 model Believer {
   id       String   @id @default(cuid())
-  group    String   @default("")
+  rank     Int      @unique @default(autoincrement())
+  familyId Int      @default(1)
   name     String   @default("") // 姓名
   gender   String   @default("") // 性别
   birthday DateTime @default(now()) // 生日
@@ -148,6 +153,7 @@ model Believer {
 
 model Service {
   id       String @id @default(cuid())
+  rank     Int    @unique @default(autoincrement())
   category String @unique // 類別
 
   createdAt DateTime @default(now())
@@ -158,6 +164,7 @@ model Service {
 
 model ServiceItem {
   id          String @id @default(cuid())
+  rank        Int    @unique @default(autoincrement())
   year        Int /// 年度
   name        String /// 名稱
   price       Int /// 價格
@@ -170,11 +177,12 @@ model ServiceItem {
   service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade) // 服務
 
   serviceItemDetails ServiceItemDetail[] /// 服務項目明細
+  Order              Order[]
 }
 
 model ServiceItemDetail {
   id    String @id @default(cuid())
-  rank  Int    @default(1) // 排序
+  rank  Int    @unique @default(autoincrement())
   name  String // 燈座名稱
   start Int    @default(1) // 開始位置
   end   Int    @default(999) // 結束位置
@@ -186,19 +194,18 @@ model ServiceItemDetail {
 
   serviceItem ServiceItem @relation(fields: [serviceItemId], references: [id], onDelete: Cascade) // 服務項目
 
-  orders Order[]
-
   @@unique([serviceItemId, rank])
 }
 
 model Order {
   id       String @id @default(cuid())
+  rank     Int    @unique @default(autoincrement())
   year     Int
   price    Int
   note     String @default("")
-  position Int
+  position String @default("") // 燈座位置
 
-  status String
+  status String @default("paid") // pending, paid, cancel
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -206,6 +213,6 @@ model Order {
   believerId String
   believer   Believer @relation(fields: [believerId], references: [id], onDelete: Cascade)
 
-  ServiceItemDetailId String
-  ServiceItemDetail   ServiceItemDetail @relation(fields: [ServiceItemDetailId], references: [id], onDelete: Cascade)
+  serviceItemId String
+  serviceItem   ServiceItem @relation(fields: [serviceItemId], references: [id], onDelete: Cascade)
 }

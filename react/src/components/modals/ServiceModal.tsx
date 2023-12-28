@@ -4,41 +4,90 @@ import { useAntd } from '@/provider/AntdProvider'
 import { trpcQuery } from '@/provider/TrpcProvider'
 import { useUserStore } from '@/store/useUser'
 import { TrpcOutputs } from '@/types/trpc'
-import { Button, Checkbox, Form, Input, Modal } from 'antd'
+import { Button, Checkbox, Form, Input, Modal, Tabs } from 'antd'
+import type { TabsProps } from 'antd'
 import { ColumnsType } from 'antd/es/table'
 import { FormInstance, Table } from 'antd/lib'
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { create } from 'zustand'
 
 type ServiceModalStoreType = {
-  believers: { name: string; id: string }[]
+  believerId?: string
   isOpen: boolean
-  onOpen: (believerId: { name: string; id: string }) => void
+  onOpen: (believerId: string) => void
   onClose: () => void
 }
 
 export const useServiceModalStore = create<ServiceModalStoreType>((set) => ({
-  believers: [],
+  believerId: undefined,
   isOpen: true,
-  onOpen: (believer) => set({ isOpen: true, believers: [believer] }),
+  onOpen: (believerId) => set({ isOpen: true, believerId }),
   onClose: () => set({ isOpen: false }),
 }))
 
 type DataType = GetArrType<TrpcOutputs['service']['getServices']>
 
 function ServiceModal() {
-  const { isOpen, onClose, believers } = useServiceModalStore()
-  const { windowWidth } = useWindowInfo()
-  const { modal } = useAntd()
-  const { name } = useUserStore()
-  const { data, isLoading } = trpcQuery.service.getServices.useQuery()
-  const [form] = Form.useForm()
+  const { isOpen, onClose, believerId } = useServiceModalStore()
+  if (!believerId) return null
+  // const items: TabsProps['items'] =
+  //   believers?.map(({ name, id }) => {
+  //     return {
+  //       key: id,
+  //       label: name,
+  //       children: <ServiceForm id={id} />,
+  //     }
+  //   }) || []
 
+  return (
+    <>
+      <Modal
+        title={'信眾服務'}
+        onCancel={onClose}
+        open={isOpen}
+        width={900}
+        centered
+        footer={[
+          <Button key="ok" type="primary" onClick={onClose}>
+            關閉
+          </Button>,
+        ]}
+      >
+        {/* <Tabs items={items} /> */}
+      </Modal>
+    </>
+  )
+}
+
+export default ServiceModal
+
+type ServiceFormProps = {
+  id: string
+}
+
+function ServiceForm({ id }: ServiceFormProps) {
+  const [serviceYear, setServiceYear] = useState(
+    new Date().getFullYear() - 1911,
+  )
+  const { message, modal } = useAntd()
+  const { name } = useUserStore()
+
+  const { data, isLoading } = trpcQuery.service.getServices.useQuery({
+    year: serviceYear,
+  })
+  const { mutate: createOrder } = trpcQuery.order.createOrder.useMutation({
+    onSuccess: () => {
+      modal.success({ title: '訂單建立成功' })
+      // onClose()
+    },
+  })
+
+  const [form] = Form.useForm()
   const flattenServiceItemMap = useMemo(() => {
     const map = new Map()
     if (data) {
       data.forEach((item) => {
-        item.serviceItems.forEach(({id,price}) => {
+        item.serviceItems.forEach(({ id, price }) => {
           map.set(id, price)
         })
       })
@@ -48,10 +97,10 @@ function ServiceModal() {
 
   const totalPrice = Form.useWatch(
     (values) => {
-      const { user, year, note, ...rest } = values
+      // console.log(values)
       let total = 0
-      for (const arrayKey in rest) {
-        const array = rest[arrayKey]
+      for (const arrayKey in values) {
+        const array = values[arrayKey]
         for (const id of array) {
           const price = flattenServiceItemMap.get(id)
           total += price || 0
@@ -61,10 +110,20 @@ function ServiceModal() {
     },
     { form },
   )
+  console.log(flattenServiceItemMap)
+  // console.log(totalPrice)
 
   const handleSubmit = async () => {
     const values = await form.validateFields()
-    console.log(values)
+    let serviceItemIds: string[] = []
+    for (const arrayKey in values) {
+      const array = values[arrayKey]
+      serviceItemIds = [...serviceItemIds, ...array]
+    }
+    createOrder({
+      believerId: id,
+      serviceItemIds,
+    })
   }
 
   if (isLoading) return <Loading />
@@ -91,57 +150,30 @@ function ServiceModal() {
       },
     },
   ]
-
   return (
-    <>
-      <Modal
-        title={believers[0]?.name || '信眾服務'}
-        onCancel={onClose}
-        open={isOpen}
-        width={900}
-        centered
-        footer={[
-          <Button key="cancel" onClick={onClose}>
-            取消
-          </Button>,
-          <Button key="ok" type="primary" onClick={handleSubmit}>
-            確定
-          </Button>,
-        ]}
-      >
-        <div className="p-4">
-          <Form form={form} className="grid grid-cols-3  gap-x-3">
-            <Form.Item
-              initialValue={new Date().getFullYear() - 1911}
-              name="year"
-              label="年度"
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item label="總金額">
-              <Input value={totalPrice} disabled />
-            </Form.Item>
-            <Form.Item label="經辦員">
-              <Input value={name} disabled />
-            </Form.Item>
-
-            <div className="col-span-3">
-              <Table
-                size="small"
-                dataSource={data}
-                columns={col}
-                pagination={false}
-              />
-            </div>
-
-            <Form.Item className=" col-span-3" label="備註" name={'note'}>
-              <Input />
-            </Form.Item>
-          </Form>
+    <div className="p-4">
+      <Form form={form} className="grid grid-cols-3  gap-x-3">
+        <Form.Item label="年度">
+          <Input
+            value={serviceYear}
+            onChange={(e) => setServiceYear(Number(e.target.value))}
+          />
+        </Form.Item>
+        <Form.Item label="總金額">
+          <Input value={totalPrice} disabled />
+        </Form.Item>
+        <Form.Item label="經辦員">
+          <Input value={name} disabled />
+        </Form.Item>
+        <div className="col-span-3">
+          <Table
+            size="small"
+            dataSource={data}
+            columns={col}
+            pagination={false}
+          />
         </div>
-      </Modal>
-    </>
+      </Form>
+    </div>
   )
 }
-
-export default ServiceModal

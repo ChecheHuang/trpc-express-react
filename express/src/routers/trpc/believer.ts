@@ -35,6 +35,7 @@ const paginationProcedure = privateProcedure.input(
 
 const select = {
   id: true,
+  rank: true,
   name: true,
   gender: true,
   birthday: true,
@@ -63,7 +64,7 @@ export const believer = router({
     .mutation(async ({ input, ctx }) => {
       const parentData = input.find((item) => item.isParent)
       const childrenData = input.filter((item) => !item.isParent)
-      if (!parentData) throw new TRPCError({ code: 'BAD_REQUEST', message: '格是錯誤' })
+      if (!parentData) throw new TRPCError({ code: 'BAD_REQUEST', message: '格式錯誤' })
       const { isParent, ...data } = parentData
       const parent = await prismadb.believer.create({
         data: {
@@ -87,7 +88,7 @@ export const believer = router({
   getBelievers: paginationProcedure
     .input(
       z.object({
-        orderKey: z.enum(['id', 'address']),
+        orderKey: z.enum(['rank', 'address']),
         name: z.string().optional(),
         phone: z.string().optional(),
         address: z.string().optional(),
@@ -102,6 +103,7 @@ export const believer = router({
             parentId: z.string().nullable(),
             id: z.string(),
             key: z.string(),
+            rank: z.number(),
             name: z.string(),
             gender: z.string(),
             birthday: z.string(),
@@ -157,7 +159,7 @@ export const believer = router({
   getBelieversByFamily: paginationProcedure
     .input(
       z.object({
-        orderKey: z.enum(['id', 'address']),
+        orderKey: z.enum(['rank', 'address']),
         name: z.string().optional(),
         phone: z.string().optional(),
         address: z.string().optional(),
@@ -243,6 +245,7 @@ export const believer = router({
         id,
       },
     })
+    console.cuslog(data)
 
     if (!data) throw new TRPCError({ code: 'NOT_FOUND', message: '找不到該客戶' })
     const { birthday, children, parent, ...believer } = data

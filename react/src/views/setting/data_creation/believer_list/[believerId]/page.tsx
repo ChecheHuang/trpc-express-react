@@ -23,16 +23,7 @@ const CustomerIdPage = () => {
   const utils = trpcQuery.useUtils()
   const { data, refetch, isLoading } =
     trpcQuery.believer.getBelieverById.useQuery({ id })
-  const d = lunisolar(data?.birthday)
-  const birthday = dayjs(data?.birthday)
-  const { mutate: update } = trpcQuery.believer.updateBeliever.useMutation({
-    onSuccess: () => {
-      utils.believer.getBelievers.invalidate()
-      refetch()
-      message.success('更新成功')
-      navigate(-1)
-    },
-  })
+
   if (isLoading) return <Loading />
 
   const handleSubmit = async () => {
@@ -43,7 +34,6 @@ const CustomerIdPage = () => {
         id,
         birthday: values.birthday.format('YYYY-MM-DD HH:mm:ss'),
       }
-      update(updateData)
     } catch (error: any) {
       console.log(error)
       const firstName = error?.errorFields[0]?.name
@@ -56,46 +46,12 @@ const CustomerIdPage = () => {
   return (
     <Container>
       <MyCard title="信眾資料">
-        <Form
-          form={form}
-          layout={'vertical'}
-          initialValues={{ ...data, birthday }}
-        >
+        <Form form={form} layout={'vertical'}>
           <div className="flex justify-end gap-2">
             <PrevButton />
             <ChangeSizeRadio />
           </div>
-          <Group>
-            <Form.Item rules={[{ required: true }]} label="姓名" name="name">
-              <Input />
-            </Form.Item>
-            <Form.Item label="電話" name="phone">
-              <Input />
-            </Form.Item>
-            <Form.Item label="地址" name="address">
-              <Input />
-            </Form.Item>
-            <Form.Item label="性別" name="gender">
-              <Radio.Group>
-                <Radio value={'男'}>男</Radio>
-                <Radio value={'女'}>女</Radio>
-                <Radio value={'其他'}>其他</Radio>
-              </Radio.Group>
-            </Form.Item>
-            <Form.Item label="生日" name="birthday">
-              <DatePicker
-                format={'YYYY-MM-DD HH:mm:ss'}
-                className="w-full"
-                showTime
-              />
-            </Form.Item>
-            <Form.Item label="八字">
-              <Input value={d.format('cY cM cD cH')} disabled />
-            </Form.Item>
-            <Form.Item label="農曆年">
-              <Input value={d.format('cY年 lM(lL)lD lH時')} disabled />
-            </Form.Item>
-          </Group>
+
           <Form.Item className="col-span-full flex justify-center">
             <ExtendedButton
               onClick={handleSubmit}
