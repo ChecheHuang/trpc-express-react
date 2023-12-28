@@ -12,8 +12,7 @@
     "db:studio": "prisma studio",
     "db:push": "prisma db push && prisma generate",
     "postinstall": "prisma generate",
-    "db:reset": "npx prisma migrate reset && npm run db:push  && npm run db:seed",
-    "log": "ts-node-dev logs/serverLog.ts"
+    "db:reset": "npx prisma migrate reset && npm run db:push  && npm run db:seed"
   },
   "keywords": [],
   "author": "",

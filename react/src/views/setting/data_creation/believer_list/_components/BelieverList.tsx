@@ -225,7 +225,7 @@ const Columns: (config?: {
             <ExtendedButton type="primary" onClick={() => navigate(`${id}`)}>
               修改
             </ExtendedButton>
-            <ExtendedButton type="success" onClick={() => onOpen({ id, name })}>
+            <ExtendedButton type="success" onClick={() => onOpen(id)}>
               服務
             </ExtendedButton>
             <ExtendedButton

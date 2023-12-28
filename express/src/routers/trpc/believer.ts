@@ -1,3 +1,4 @@
+import { getBelieverListById } from '../../lib/cusFn/getBelieverListbyId'
 import prismadb from '../../lib/prismadb'
 import { router, procedure, privateProcedure } from '../../lib/trpc'
 import { TRPCError } from '@trpc/server'
@@ -219,58 +220,9 @@ export const believer = router({
       }
       return result
     }),
-  getBelieverById: privateProcedure.input(z.object({ id: z.string() })).query(async ({ input }) => {
-    const { id } = input
-    const data = await prismadb.believer.findUnique({
-      select: {
-        ...select,
-        parent: {
-          select: {
-            ...select,
-            children: {
-              select,
-              where: {
-                id: {
-                  not: id,
-                },
-              },
-            },
-          },
-        },
-        children: {
-          select,
-        },
-      },
-      where: {
-        id,
-      },
-    })
-    console.cuslog(data)
-
-    if (!data) throw new TRPCError({ code: 'NOT_FOUND', message: '找不到該客戶' })
-    const { birthday, children, parent, ...believer } = data
-
-    if (parent === null) {
-      const result = [
-        {
-          ...believer,
-          isParent: true,
-          birthday: dayjs(birthday).format('YYYY-MM-DD HH:mm:ss'),
-        },
-        ...children.map(({ birthday, ...child }) => ({
-          ...child,
-          isParent: false,
-          birthday: dayjs(birthday).format('YYYY-MM-DD HH:mm:ss'),
-        })),
-      ]
-      return result
-    }
-
-    const result = {
-      ...believer,
-      birthday: dayjs(birthday).format('YYYY-MM-DD HH:mm:ss'),
-    }
-    return result
+  getBelieverById: privateProcedure.input(z.string()).query(async ({ input }) => {
+    const data = await getBelieverListById(input)
+    return data
   }),
   updateBeliever: privateProcedure
     .input(

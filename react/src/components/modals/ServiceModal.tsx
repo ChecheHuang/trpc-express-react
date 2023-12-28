@@ -29,15 +29,21 @@ type DataType = GetArrType<TrpcOutputs['service']['getServices']>
 
 function ServiceModal() {
   const { isOpen, onClose, believerId } = useServiceModalStore()
-  if (!believerId) return null
-  // const items: TabsProps['items'] =
-  //   believers?.map(({ name, id }) => {
-  //     return {
-  //       key: id,
-  //       label: name,
-  //       children: <ServiceForm id={id} />,
-  //     }
-  //   }) || []
+  const { data = [], isFetching } = trpcQuery.believer.getBelieverById.useQuery(
+    believerId as string,
+    {
+      refetchOnWindowFocus: false,
+      enabled: !!believerId,
+    },
+  )
+  const items: TabsProps['items'] =
+    data?.map(({ name, id }) => {
+      return {
+        key: id,
+        label: name,
+        children: <ServiceForm id={id} />,
+      }
+    }) || []
 
   return (
     <>
@@ -53,7 +59,7 @@ function ServiceModal() {
           </Button>,
         ]}
       >
-        {/* <Tabs items={items} /> */}
+        {isFetching ? <Loading /> : <Tabs items={items} />}
       </Modal>
     </>
   )
@@ -97,7 +103,6 @@ function ServiceForm({ id }: ServiceFormProps) {
 
   const totalPrice = Form.useWatch(
     (values) => {
-      // console.log(values)
       let total = 0
       for (const arrayKey in values) {
         const array = values[arrayKey]
@@ -110,8 +115,6 @@ function ServiceForm({ id }: ServiceFormProps) {
     },
     { form },
   )
-  console.log(flattenServiceItemMap)
-  // console.log(totalPrice)
 
   const handleSubmit = async () => {
     const values = await form.validateFields()
