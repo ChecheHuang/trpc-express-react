@@ -11,6 +11,7 @@ import {
   Form,
   Input,
   Modal,
+  Radio,
   Select,
   Space,
 } from 'antd'
@@ -60,6 +61,9 @@ const CreateBelieverModel = ({
 
       const { familyMembers, phone, city, area, address, ...values } =
         validateValues
+
+      console.log(validateValues)
+      return
       const isParent = !familyMembers.some(
         (familyMember) => familyMember.isParent,
       )
@@ -168,22 +172,13 @@ const CreateBelieverModel = ({
             </Form.Item>
             <AddressInput className="col-span-full" form={form} />
 
-            <Form.Item
-              className=" col-span-full"
-              label={
-                <div>
-                  家庭成員
-                  <br />
-                  (勾選為戶長)
-                </div>
-              }
-            >
+            <Form.Item className=" col-span-full" label={<div>家庭成員</div>}>
               <Form.List name="familyMembers">
                 {(fields, { add, remove }) => (
                   <>
                     {fields.map(({ key, name, ...restField }) => (
                       <Space key={key} align="baseline">
-                        <Form.Item
+                        {/* <Form.Item
                           {...restField}
                           className="mb-2"
                           name={[name, 'isParent']}
@@ -207,7 +202,7 @@ const CreateBelieverModel = ({
                               )
                             }}
                           />
-                        </Form.Item>
+                        </Form.Item> */}
 
                         <Form.Item
                           {...restField}
@@ -232,7 +227,9 @@ const CreateBelieverModel = ({
                             placeholder="性別"
                           />
                         </Form.Item>
-
+                        <Form.Item label="電話" name="phone">
+                          <Input placeholder="請輸入電話" />
+                        </Form.Item>
                         <Form.Item
                           {...restField}
                           className="mb-2"
@@ -242,7 +239,7 @@ const CreateBelieverModel = ({
                           <DatePicker
                             placeholder="請選擇生日"
                             format={'YYYY-MM-DD HH:mm:ss'}
-                            className="md:w-[180px]"
+                            // className="md:w-[180px]"
                             showTime
                           />
                         </Form.Item>

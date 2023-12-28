@@ -4,7 +4,7 @@ import { useAntd } from '@/provider/AntdProvider'
 import { trpcQuery } from '@/provider/TrpcProvider'
 import { useUserStore } from '@/store/useUser'
 import { TrpcOutputs } from '@/types/trpc'
-import { Button, Checkbox, Form, Input, Modal, Tabs } from 'antd'
+import { Button, Checkbox, Form, Input, Modal, Spin, Tabs } from 'antd'
 import type { TabsProps } from 'antd'
 import { ColumnsType } from 'antd/es/table'
 import { FormInstance, Table } from 'antd/lib'
@@ -20,7 +20,7 @@ type ServiceModalStoreType = {
 
 export const useServiceModalStore = create<ServiceModalStoreType>((set) => ({
   believerId: undefined,
-  isOpen: true,
+  isOpen: false,
   onOpen: (believerId) => set({ isOpen: true, believerId }),
   onClose: () => set({ isOpen: false }),
 }))
@@ -37,9 +37,9 @@ function ServiceModal() {
     },
   )
   const items: TabsProps['items'] =
-    data?.map(({ name, id }) => {
+    data?.map(({ name, id }, index) => {
       return {
-        key: id,
+        key: index.toString(),
         label: name,
         children: <ServiceForm id={id} />,
       }
@@ -59,7 +59,13 @@ function ServiceModal() {
           </Button>,
         ]}
       >
-        {isFetching ? <Loading /> : <Tabs items={items} />}
+        {isFetching ? (
+          <div className="flex h-[400px] w-full items-center justify-center">
+            <Spin size="large" />
+          </div>
+        ) : (
+          <Tabs defaultActiveKey="0" items={items} />
+        )}
       </Modal>
     </>
   )
@@ -129,8 +135,6 @@ function ServiceForm({ id }: ServiceFormProps) {
     })
   }
 
-  if (isLoading) return <Loading />
-
   const col: ColumnsType<DataType> = [
     {
       title: '類別',
@@ -153,8 +157,15 @@ function ServiceForm({ id }: ServiceFormProps) {
       },
     },
   ]
+  if (isLoading) {
+    return (
+      <div className="flex h-[400px] w-full items-center justify-center">
+        <Spin size="large" />
+      </div>
+    )
+  }
   return (
-    <div className="p-4">
+    <div className="h-[400px] w-full p-4 ">
       <Form form={form} className="grid grid-cols-3  gap-x-3">
         <Form.Item label="年度">
           <Input
@@ -176,6 +187,11 @@ function ServiceForm({ id }: ServiceFormProps) {
             pagination={false}
           />
         </div>
+        <Form.Item className="col-span-full mb-0 mt-2 flex justify-center">
+          <Button type="primary" onClick={handleSubmit}>
+            送出
+          </Button>
+        </Form.Item>
       </Form>
     </div>
   )

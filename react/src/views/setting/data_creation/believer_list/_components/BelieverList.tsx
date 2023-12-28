@@ -178,20 +178,20 @@ const Columns: (config?: {
         <div>{lunisolar(birthday).format('cZ')}</div>
       ),
     },
-    {
-      title: '八字',
-      width: 130,
-      render: (_, { birthday }) => (
-        <div>{lunisolar(birthday).format('cY cM cD cH')}</div>
-      ),
-    },
-    {
-      title: '農曆年',
-      width: 160,
-      render: (_, { birthday }) => (
-        <div>{lunisolar(birthday).format('cY年 lM(lL)lD lH時')}</div>
-      ),
-    },
+    // {
+    //   title: '八字',
+    //   width: 130,
+    //   render: (_, { birthday }) => (
+    //     <div>{lunisolar(birthday).format('cY cM cD cH')}</div>
+    //   ),
+    // },
+    // {
+    //   title: '農曆年',
+    //   width: 160,
+    //   render: (_, { birthday }) => (
+    //     <div>{lunisolar(birthday).format('cY年 lM(lL)lD lH時')}</div>
+    //   ),
+    // },
     {
       title: '電話',
       width: 100,
@@ -221,33 +221,38 @@ const Columns: (config?: {
       width,
       render: (_, { id, name }) => {
         return (
-          <DropdownButton>
-            <ExtendedButton type="primary" onClick={() => navigate(`${id}`)}>
-              修改
-            </ExtendedButton>
-            <ExtendedButton type="success" onClick={() => onOpen(id)}>
+          <>
+            <ExtendedButton type="primary" onClick={() => onOpen(id)}>
               服務
             </ExtendedButton>
-            <ExtendedButton
-              onClick={() => {
-                modal?.confirm({
-                  title: <div>{name}</div>,
-                  icon: <ExclamationCircleOutlined />,
-                  content: '刪除資料不可回復，確認刪除?',
-                  okText: '確認',
-                  cancelText: '取消',
-                  onOk: () => {
-                    deleteBeliever({ id })
-                  },
-                })
-              }}
-              type="primary"
-              danger
-              disabled={false}
-            >
-              刪除
-            </ExtendedButton>
-          </DropdownButton>
+          </>
+          // <DropdownButton>
+          //   <ExtendedButton type="primary" onClick={() => navigate(`${id}`)}>
+          //     修改
+          //   </ExtendedButton>
+          //   <ExtendedButton type="success" onClick={() => onOpen(id)}>
+          //     服務
+          //   </ExtendedButton>
+          //   <ExtendedButton
+          //     onClick={() => {
+          //       modal?.confirm({
+          //         title: <div>{name}</div>,
+          //         icon: <ExclamationCircleOutlined />,
+          //         content: '刪除資料不可回復，確認刪除?',
+          //         okText: '確認',
+          //         cancelText: '取消',
+          //         onOk: () => {
+          //           deleteBeliever({ id })
+          //         },
+          //       })
+          //     }}
+          //     type="primary"
+          //     danger
+          //     disabled={false}
+          //   >
+          //     刪除
+          //   </ExtendedButton>
+          // </DropdownButton>
         )
       },
     },

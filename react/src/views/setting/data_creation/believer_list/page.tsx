@@ -7,7 +7,7 @@ import { Button, Tabs } from 'antd'
 import { useState } from 'react'
 
 const BelieverListPage = () => {
-  const [createModalOpen, setCreateModalOpen] = useState(false)
+  const [createModalOpen, setCreateModalOpen] = useState(true)
   return (
     <>
       <CreateBelieverModel
