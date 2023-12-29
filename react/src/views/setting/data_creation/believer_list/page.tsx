@@ -1,26 +1,27 @@
 import BelieverByFamilyList from './_components/BelieverByFamilyList'
 import BelieverList from './_components/BelieverList'
-import CreateBelieverModel from './_components/CreateBelieverModel'
 import Container from '@/components/container/Container'
+import { useSearchBelieverModalStore } from '@/components/modals/SearchBelieverModal'
+import { useDebounce } from '@/hooks/useHook'
+import { trpcClient, trpcQuery } from '@/provider/TrpcProvider'
+import { TrpcInputs, TrpcOutputs } from '@/types/trpc'
 import { AndroidOutlined, AppleOutlined } from '@ant-design/icons'
-import { Button, Tabs } from 'antd'
+import { Button, Form, Input, Modal, Table, Tabs } from 'antd'
+import { ColumnsType } from 'antd/es/table'
 import { useState } from 'react'
 
 const BelieverListPage = () => {
-  const [createModalOpen, setCreateModalOpen] = useState(true)
+  const { onOpen } = useSearchBelieverModalStore()
+
   return (
     <>
-      <CreateBelieverModel
-        createModalOpen={createModalOpen}
-        setCreateModalOpen={setCreateModalOpen}
-      />
       <Container className="m-3 rounded-md bg-white">
         <Tabs
           tabBarExtraContent={
             <Button
               type="primary"
               onClick={() => {
-                setCreateModalOpen(true)
+                onOpen('createBeliever')
               }}
             >
               新增信眾

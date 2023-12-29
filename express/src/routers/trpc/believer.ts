@@ -1,4 +1,4 @@
-import { getBelieverListById } from '../../lib/cusFn/getBelieverListbyId'
+import { getBelieverListById } from '../../lib/cusFn/getBelieverListById'
 import prismadb from '../../lib/prismadb'
 import { router, procedure, privateProcedure } from '../../lib/trpc'
 import { TRPCError } from '@trpc/server'
@@ -28,9 +28,9 @@ const routeSchema: z.ZodType<Parent> = z
 
 const paginationProcedure = privateProcedure.input(
   z.object({
-    _page: z.string(),
-    _limit: z.string(),
-    orderValue: z.enum(['asc', 'desc']),
+    _page: z.string().optional().default('1'),
+    _limit: z.string().optional().default('10'),
+    orderValue: z.enum(['asc', 'desc']).optional().default('asc'),
   })
 )
 
@@ -41,12 +41,68 @@ const select = {
   gender: true,
   birthday: true,
   phone: true,
-  city: true,
-  area: true,
   address: true,
 }
 
 export const believer = router({
+  searchBeliever: procedure
+    .input(
+      z.object({
+        name: z.string(),
+        phone: z.string(),
+        address: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { name, phone, address } = input
+      // if (!name && !phone && !address) {
+      //   return []
+      // }
+
+      const where = {
+        name: name ? { contains: name } : undefined,
+        phone: phone ? { contains: phone } : undefined,
+        address: address ? { contains: address } : undefined,
+      }
+
+      const data = await prismadb.believer.findMany({
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          address: true,
+        },
+        where,
+      })
+      const result = data.map((item) => {
+        return {
+          key: item.id,
+          ...item,
+        }
+      })
+      return result
+    }),
+  findParentIdByBelieverId: procedure.input(z.string()).query(async ({ input }) => {
+    const data = await prismadb.believer.findUnique({
+      where: {
+        id: input,
+      },
+      select: {
+        id: true,
+        parent: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    })
+    if (!data) throw new TRPCError({ code: 'BAD_REQUEST', message: '找不到會員' })
+    if (data.parent === null) {
+      return data.id
+    }
+    return data.parent.id
+  }),
+
   createBeliever: privateProcedure
     .input(
       z.array(
@@ -89,12 +145,10 @@ export const believer = router({
   getBelievers: paginationProcedure
     .input(
       z.object({
-        orderKey: z.enum(['rank', 'address']),
+        orderKey: z.enum(['rank', 'address']).optional().default('rank'),
         name: z.string().optional(),
         phone: z.string().optional(),
         address: z.string().optional(),
-        city: z.string().optional(),
-        area: z.string().optional(),
       })
     )
     .output(
@@ -109,8 +163,6 @@ export const believer = router({
             gender: z.string(),
             birthday: z.string(),
             phone: z.string(),
-            city: z.string(),
-            area: z.string(),
             address: z.string(),
           })
         ),
@@ -119,14 +171,12 @@ export const believer = router({
     )
     .query(async ({ input }) => {
       const { _limit, _page, orderValue } = input
-      const { orderKey, name, address, phone, city, area } = input
+      const { orderKey, name, address, phone } = input
 
       const where = {
         name: name ? { contains: name } : undefined,
         phone: phone ? { contains: phone } : undefined,
         address: address ? { contains: address } : undefined,
-        city: city ? { contains: city } : undefined,
-        area: area ? { contains: area } : undefined,
       }
       const take = parseInt(_limit)
       const skip = (parseInt(_page) - 1) * take
@@ -164,21 +214,18 @@ export const believer = router({
         name: z.string().optional(),
         phone: z.string().optional(),
         address: z.string().optional(),
-        city: z.string().optional(),
-        area: z.string().optional(),
       })
     )
     .query(async ({ input }) => {
       const { _limit, _page, orderValue } = input
-      const { orderKey, name, address, phone, city, area } = input
+      const { orderKey, name, address, phone } = input
 
       const where = {
         parentId: null,
         name: name ? { contains: name } : undefined,
         phone: phone ? { contains: phone } : undefined,
         address: address ? { contains: address } : undefined,
-        city: city ? { contains: city } : undefined,
-        area: area ? { contains: area } : undefined,
+      
       }
       const take = parseInt(_limit)
       const skip = (parseInt(_page) - 1) * take

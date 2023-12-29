@@ -168,16 +168,6 @@ const Columns: (config?: {
       ...GetColumnSearchProps(),
     },
     {
-      title: '縣市',
-      dataIndex: 'city',
-      ...GetColumnSearchProps(),
-    },
-    {
-      title: '區域',
-      dataIndex: 'area',
-      ...GetColumnSearchProps(),
-    },
-    {
       title: '地址',
       dataIndex: 'address',
       sorter: true,

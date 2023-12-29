@@ -95,6 +95,7 @@ const CreateBelieverModel = ({
       <Modal
         title="新增信眾"
         onCancel={handleCancel}
+        centered
         open={createModalOpen}
         footer={[
           <Button key="cancel" onClick={handleCancel}>

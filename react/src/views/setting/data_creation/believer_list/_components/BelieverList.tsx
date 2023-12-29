@@ -1,6 +1,6 @@
 import DropdownButton from '@/components/buttons/DropdownButton'
 import ExtendedButton from '@/components/buttons/ExtendedButton'
-import { useServiceDrawerStore } from '@/components/modals/ServiceDrawer'
+
 import { useServiceModalStore } from '@/components/modals/ServiceModal'
 import { GetColumnSearchProps } from '@/components/utils/GetColumnSearchProps'
 import { useWindowInfo } from '@/hooks/useHook'
@@ -196,16 +196,6 @@ const Columns: (config?: {
       title: '電話',
       width: 100,
       dataIndex: 'phone',
-      ...GetColumnSearchProps(),
-    },
-    {
-      title: '縣市',
-      dataIndex: 'city',
-      ...GetColumnSearchProps(),
-    },
-    {
-      title: '區域',
-      dataIndex: 'area',
       ...GetColumnSearchProps(),
     },
     {
