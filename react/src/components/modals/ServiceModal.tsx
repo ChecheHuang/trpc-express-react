@@ -12,32 +12,32 @@ import { useMemo, useRef, useState } from 'react'
 import { create } from 'zustand'
 
 type ServiceModalStoreType = {
-  believerId?: string
+  believer?: { id: string; name: string }
   isOpen: boolean
-  onOpen: (believerId: string) => void
+  onOpen: (believer: { id: string; name: string }) => void
   onClose: () => void
 }
 
 export const useServiceModalStore = create<ServiceModalStoreType>((set) => ({
-  believerId: undefined,
+  believer: undefined,
   isOpen: false,
-  onOpen: (believerId) => set({ isOpen: true, believerId }),
+  onOpen: (believer) => set({ isOpen: true, believer }),
   onClose: () => set({ isOpen: false }),
 }))
 
 type DataType = GetArrType<TrpcOutputs['service']['getServices']>
 
 function ServiceModal() {
-  const { isOpen, onClose, believerId } = useServiceModalStore()
-  const { data = [], isFetching } = trpcQuery.believer.getBelieverById.useQuery(
-    believerId as string,
-    {
+  const { isOpen, onClose, believer } = useServiceModalStore()
+  const { data: result, isFetching } =
+    trpcQuery.believer.getBelieverById.useQuery(believer?.id as string, {
       refetchOnWindowFocus: false,
-      enabled: !!believerId,
-    },
-  )
+      enabled: !!believer?.id,
+    })
+  const data = result?.data || []
+
   const items: TabsProps['items'] =
-    data?.map(({ name, id }, index) => {
+    data.map(({ name, id }, index) => {
       return {
         key: index.toString(),
         label: name,

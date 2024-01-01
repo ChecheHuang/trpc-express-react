@@ -1,58 +1,110 @@
-import addressOptions from './addressOptions.json'
+import { useUpdateEffect } from '@/hooks/useHook'
 import { cn } from '@/lib/utils'
-import { Cascader, Form, Input, InputRef } from 'antd'
+import { trpcQuery } from '@/provider/TrpcProvider'
+import { Cascader, Form, AutoComplete } from 'antd'
 import { FormInstance } from 'antd/lib'
-import { useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 type AddressInputProps = {
   className?: string
   form: FormInstance
+  name?: string
+  label?: string | boolean
+  direction?: 'row' | 'col'
 }
 
-const AddressInput = ({ form, className }: AddressInputProps) => {
-  // const { data: addressOptions } = trpcQuery.options.cityOptions.useQuery()
-  const addressInputRef = useRef<InputRef>(null)
-  const customValue = Form.useWatch((values) => {
-    if (!values.city || !values.area) return undefined
-    return [values.city, values.area]
-  }, form)
+const AddressInput = ({
+  form,
+  name = 'address',
+  label = '地址',
+  className,
+  direction = 'row',
+}: AddressInputProps) => {
+  const initValue = form.getFieldValue(name) || ''
+  const [city, district, address] = initValue.split(/(?<=市|縣|區|鎮)/)
+  const [addressDetail, setAddressDetail] = useState(address || '')
+  const [cityAndArea, setCityAndArea] = useState<(string | number)[]>(
+    city ? [city, district] : [],
+  )
+  const addressInputRef = useRef(null)
+
+  const { data: citys = {} } = trpcQuery.options.cityOptions.useQuery()
+
+  const cascaderOptions = useMemo(() => {
+    if (!citys) return []
+    return Object.entries(citys).map(([key, value]) => ({
+      value: key,
+      label: key,
+      children: Object.entries(value as AnyObject).map(([key]) => ({
+        value: key,
+        label: key,
+      })),
+    }))
+  }, [citys])
+
+  useUpdateEffect(() => {
+    const addressPrefix = cityAndArea.join('')
+    form.setFieldValue(name, addressPrefix + addressDetail)
+  }, [cityAndArea, addressDetail])
+
+  const autoCompleteOptions = useMemo(() => {
+    const [city, district] = cityAndArea
+    if (!city || !district) return []
+    const ignoreTypeCitys = citys as any
+    const options: string[] = ignoreTypeCitys[city]?.[district] || []
+    return options
+      .filter((value) => value.includes(addressDetail))
+      .map((value) => ({ value }))
+  }, [cityAndArea, addressDetail, citys])
+
   return (
     <>
-      <Form.Item label="地址" className={cn('required', className)}>
-        <div className="flex">
-          <Form.Item
-            className="mb-2"
-            rules={[{ required: true, message: '請選擇縣市' }]}
-          >
+      <Form.Item
+        rules={[
+          { required: true, message: '請選擇縣市' },
+          {
+            pattern: /^(?!.*[區鄉鎮]$)/,
+            message: '請輸入完整地址',
+          },
+        ]}
+        name={name}
+        label={label}
+        className={cn('required ', className)}
+      >
+        <div
+          className={cn('gap flex gap-2', direction === 'col' && 'flex-col')}
+        >
+          <Form.Item className="mb-0">
             <Cascader
               allowClear={false}
-              value={customValue}
+              value={cityAndArea}
               placeholder="請選擇縣市"
               onChange={(stringArray) => {
                 if (!stringArray) return
-                const [city, area] = stringArray
-                form.setFieldValue('city', city)
-                form.setFieldValue('area', area)
-                addressInputRef.current?.focus()
-                // form.setFieldValue('address', '')
+                setCityAndArea(stringArray)
+                setAddressDetail('')
+                if (!addressInputRef.current)
+                  return // eslint-disable-next-line no-extra-semi
+                ;(addressInputRef.current as HTMLInputElement).focus()
               }}
-              options={addressOptions}
+              options={cascaderOptions}
             />
           </Form.Item>
           <Form.Item
-            className="mb-0 ml-2 flex-1"
-            name="address"
+            className="mb-0 flex-1"
             rules={[{ required: true, message: '請輸入地址' }]}
           >
-            <Input ref={addressInputRef} placeholder="請輸入地址" />
+            <AutoComplete
+              ref={addressInputRef}
+              value={addressDetail}
+              onChange={(value) => {
+                setAddressDetail(value)
+              }}
+              options={autoCompleteOptions}
+              placeholder="請輸入地址"
+            />
           </Form.Item>
         </div>
-        <Form.Item name="city" className="hidden">
-          <Input />
-        </Form.Item>
-        <Form.Item name="area" className="hidden">
-          <Input />
-        </Form.Item>
       </Form.Item>
     </>
   )

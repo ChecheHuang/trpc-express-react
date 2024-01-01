@@ -94,8 +94,21 @@ export const service = router({
   createLightDetail: privateProcedure
     .input(z.object({ serviceItemId: z.string(), name: z.string(), start: z.number(), end: z.number() }))
     .mutation(async ({ input }) => {
+      const lastRank = await prismadb.serviceItemDetail.findFirst({
+        where: {
+          serviceItemId: input.serviceItemId,
+        },
+        orderBy: {
+          rank: 'desc',
+        },
+        select: {
+          rank: true,
+        },
+      })
+
       const lightService = await prismadb.serviceItemDetail.create({
         data: {
+          rank: lastRank ? lastRank.rank + 1 : 1,
           name: input.name,
           start: input.start,
           end: input.end,

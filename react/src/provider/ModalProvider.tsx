@@ -1,4 +1,4 @@
-import CreateBelieverModal from '@/components/modals/CreateBelieverModal'
+import CreateBelieverModal from '@/components/modals/BelieverModal'
 import SearchBelieverModal from '@/components/modals/SearchBelieverModal'
 import ServiceModal from '@/components/modals/ServiceModal'
 

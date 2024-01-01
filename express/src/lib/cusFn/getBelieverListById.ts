@@ -9,8 +9,6 @@ export const getBelieverListById = async (id: string) => {
     gender: true,
     birthday: true,
     phone: true,
-    city: true,
-    area: true,
     address: true,
   }
   const data = await prismadb.believer.findUnique({
@@ -41,14 +39,19 @@ export const getBelieverListById = async (id: string) => {
   if (!data) throw new TRPCError({ code: 'NOT_FOUND', message: '找不到該客戶' })
   const { parent, children, ...currentUser } = data
   if (parent === null) {
-    const result = [{ ...currentUser, isParent: false }, ...children.map((child) => ({ ...child, isParent: false }))]
+    //自己就是戶長
+    const data = [currentUser, ...children]
+
+    const result = {
+      parent: currentUser,
+      data,
+    }
     return result
   }
   const { children: currentUserParentChildren, ...currentUserParent } = parent
-  const result = [
-    { ...currentUser, isParent: false },
-    { ...currentUserParent, isParent: true },
-    ...currentUserParentChildren.map((child) => ({ ...child, isParent: false })),
-  ]
+  const result = {
+    parent: currentUserParent,
+    data: [currentUserParent, currentUser, ...currentUserParentChildren],
+  }
   return result
 }

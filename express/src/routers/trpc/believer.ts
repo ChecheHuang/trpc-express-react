@@ -82,65 +82,87 @@ export const believer = router({
       })
       return result
     }),
-  findParentIdByBelieverId: procedure.input(z.string()).query(async ({ input }) => {
+
+  changeParentIdByBelieverId: procedure.input(z.string()).mutation(async ({ input }) => {
     const data = await prismadb.believer.findUnique({
       where: {
         id: input,
       },
       select: {
         id: true,
+        name: true,
         parent: {
           select: {
             id: true,
+            children: {
+              select: {
+                id: true,
+              },
+              where: {
+                id: {
+                  not: input,
+                },
+              },
+            },
           },
         },
       },
     })
     if (!data) throw new TRPCError({ code: 'BAD_REQUEST', message: '找不到會員' })
+
     if (data.parent === null) {
-      return data.id
+      return
     }
-    return data.parent.id
+
+    const newParent = await prismadb.believer.update({
+      where: {
+        id: input,
+      },
+      data: {
+        parentId: null,
+      },
+      select: {
+        id: true,
+      },
+    })
+    const familyIds = [...data.parent.children.map((item) => item.id), data.parent.id]
+    for (const id of familyIds) {
+      await prismadb.believer.update({
+        where: {
+          id,
+        },
+        data: {
+          parentId: newParent.id,
+        },
+      })
+    }
   }),
 
   createBeliever: privateProcedure
     .input(
-      z.array(
-        z.object({
-          isParent: z.boolean(),
-          name: z.string(),
-          gender: z.string(),
-          birthday: z.string(),
-          phone: z.string(),
-          city: z.string(),
-          area: z.string(),
-          address: z.string(),
-        })
-      )
+      z.object({
+        parentId: z.string().nullable(),
+        name: z.string(),
+        gender: z.string(),
+        birthday: z.string(),
+        phone: z.string(),
+        address: z.string(),
+      })
     )
     .mutation(async ({ input, ctx }) => {
-      const parentData = input.find((item) => item.isParent)
-      const childrenData = input.filter((item) => !item.isParent)
-      if (!parentData) throw new TRPCError({ code: 'BAD_REQUEST', message: '格式錯誤' })
-      const { isParent, ...data } = parentData
-      const parent = await prismadb.believer.create({
+      const { birthday, ...data } = input
+      const newBeliever = await prismadb.believer.create({
         data: {
           ...data,
-          birthday: new Date(parentData.birthday),
+          birthday: new Date(birthday),
           createdUserId: ctx.user.id,
         },
+        select: {
+          id: true,
+          name: true,
+        },
       })
-      const parentId = parent.id
-      for (const { isParent, ...child } of childrenData) {
-        await prismadb.believer.create({
-          data: {
-            ...child,
-            birthday: new Date(child.birthday),
-            parentId,
-            createdUserId: ctx.user.id,
-          },
-        })
-      }
+      return newBeliever
     }),
   getBelievers: paginationProcedure
     .input(
@@ -225,7 +247,6 @@ export const believer = router({
         name: name ? { contains: name } : undefined,
         phone: phone ? { contains: phone } : undefined,
         address: address ? { contains: address } : undefined,
-      
       }
       const take = parseInt(_limit)
       const skip = (parseInt(_page) - 1) * take
@@ -283,10 +304,7 @@ export const believer = router({
       })
     )
     .mutation(async ({ input }) => {
-      //todo 如果要改戶長
-
       const { id, birthday, ...data } = input
-
       await prismadb.believer.update({
         where: {
           id,
@@ -296,6 +314,41 @@ export const believer = router({
           birthday: new Date(birthday),
         },
       })
+    }),
+  changeBelieverParent: privateProcedure
+    .input(z.object({ id: z.string(), currentBelieverId: z.string().optional() }))
+    .mutation(async ({ input }) => {
+      const { id, currentBelieverId } = input
+      if (!currentBelieverId) {
+        await prismadb.believer.update({
+          where: {
+            id,
+          },
+          data: {
+            parentId: null,
+          },
+        })
+        return
+      }
+      const currentBeliever = await prismadb.believer.findUnique({
+        where: {
+          id: currentBelieverId,
+        },
+        select: {
+          id: true,
+          parentId: true,
+        },
+      })
+      const parentId = currentBeliever?.parentId || currentBeliever?.id
+      await prismadb.believer.update({
+        where: {
+          id,
+        },
+        data: {
+          parentId,
+        },
+      })
+      return
     }),
   deleteBeliever: privateProcedure.input(z.object({ id: z.string() })).mutation(async ({ input }) => {
     const { id } = input

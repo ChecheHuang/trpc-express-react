@@ -24,6 +24,7 @@ const LightingSetting = () => {
   const [showLightKey, setShowLightKey] = useState<string>('')
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const { data, isLoading, refetch } = trpcQuery.service.getLights.useQuery()
+  console.log(data)
   const { mutate: updateLight } = trpcQuery.service.updateLight.useMutation({
     onSuccess: () => {
       refetch()

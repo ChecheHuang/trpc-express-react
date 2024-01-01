@@ -212,7 +212,7 @@ const Columns: (config?: {
       render: (_, { id, name }) => {
         return (
           <>
-            <ExtendedButton type="primary" onClick={() => onOpen(id)}>
+            <ExtendedButton type="primary" onClick={() => onOpen({id, name})}>
               服務
             </ExtendedButton>
           </>

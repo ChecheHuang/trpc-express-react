@@ -1,17 +1,19 @@
 import { trpcRouter } from '../src/routers/trpc'
+import citys from './citys.json'
 import believers from './believers.json'
 import routes from './routes.json'
 import services from './services.json'
-import taiwanCity from './taiwanCity.json'
+// import taiwanCity from './taiwanCity.json'
 import { PrismaClient, Prisma } from '@prisma/client'
 import bcrypt from 'bcrypt'
 import chalk from 'chalk'
+import { logserver } from '../src/lib/plugin'
 
 const prismadb = new PrismaClient()
 
 const deleteData = async () => {
-  await prismadb['taiwanCity'].deleteMany()
-  await prismadb.$queryRaw`ALTER TABLE taiwanCity AUTO_INCREMENT = 1;`
+  await prismadb['city'].deleteMany()
+  await prismadb.$queryRaw`ALTER TABLE city AUTO_INCREMENT = 1;`
   await prismadb['believer'].deleteMany()
   await prismadb.$queryRaw`ALTER TABLE believer AUTO_INCREMENT = 1;`
   await prismadb['role'].deleteMany()
@@ -28,16 +30,40 @@ const deleteData = async () => {
   // await prismadb.$queryRaw`ALTER TABLE order AUTO_INCREMENT = 1;`
 }
 
+interface Road {
+  name: string
+}
+
+interface Area {
+  name: string
+  roads: { create: Road[] }
+}
+
+interface City {
+  name: string
+  areas: { create: Area[] }
+}
 const init = async () => {
   //todo 創建台灣地區資料
   const taiwanCitySeed = await (async () => {
-    const data = Object.entries(taiwanCity)
-    for (const [name, areas] of data) {
-      await prismadb.taiwanCity.create({
-        data: {
-          name,
-          areas,
-        },
+    const output: City[] = []
+    for (const city in citys) {
+      const areas = citys[city]
+      const cityObj: City = { name: city, areas: { create: [] } }
+      for (const area in areas) {
+        const roads = areas[area]
+        const areaObj: Area = { name: area, roads: { create: [] } }
+        for (const road of roads) {
+          areaObj.roads.create.push({ name: road })
+        }
+        cityObj.areas.create.push(areaObj)
+      }
+      output.push(cityObj)
+    }
+
+    for (const data of output) {
+      await prismadb.city.create({
+        data,
       })
     }
   })()

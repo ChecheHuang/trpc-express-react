@@ -1,3 +1,4 @@
+import { useSearchBelieverModalStore } from '../modals/SearchBelieverModal'
 import { useWindowInfo } from '@/hooks/useHook'
 import { CommentOutlined, CustomerServiceOutlined } from '@ant-design/icons'
 import { FloatButton } from 'antd'
@@ -5,6 +6,9 @@ import { motion } from 'framer-motion'
 
 const MyFloatButton = () => {
   const { windowWidth, windowHeight } = useWindowInfo()
+
+  const { onOpen: openSearchBelieverModal } = useSearchBelieverModalStore()
+
   return (
     <>
       <motion.div
@@ -19,11 +23,16 @@ const MyFloatButton = () => {
       >
         <FloatButton.Group
           shape="circle"
-          trigger="click"
+          trigger="hover"
           type="primary"
           icon={<CustomerServiceOutlined />}
         >
-          <FloatButton shape="circle" icon={<CommentOutlined />} />
+          <FloatButton
+            tooltip="信眾資料"
+            onClick={() => openSearchBelieverModal('createBeliever')}
+            shape="circle"
+            icon={<CommentOutlined />}
+          />
           <FloatButton shape="circle" icon={<CommentOutlined />} />
         </FloatButton.Group>
       </motion.div>

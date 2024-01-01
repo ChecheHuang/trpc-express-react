@@ -1,8 +1,8 @@
-import { useCreateBelieverModalStore } from './CreateBelieverModal'
+import { useBelieverModalStore } from './BelieverModal'
 import Loading from '@/components/Loading'
 import { useDebounce, useWindowInfo } from '@/hooks/useHook'
 import { useAntd } from '@/provider/AntdProvider'
-import { trpcQuery } from '@/provider/TrpcProvider'
+import { trpcClient, trpcQuery } from '@/provider/TrpcProvider'
 import { useUserStore } from '@/store/useUser'
 import { TrpcInputs, TrpcOutputs } from '@/types/trpc'
 import { Button, Checkbox, Form, Input, Modal, Spin, Tabs } from 'antd'
@@ -15,37 +15,83 @@ import { create } from 'zustand'
 type SearchBeliverType = TrpcInputs['believer']['searchBeliever']
 
 type DataType = GetArrType<TrpcOutputs['believer']['searchBeliever']>
+
+type SearchBelieverType = 'createBeliever' | 'changeParent'
+
 type SearchBelieverModalStoreType = {
-  type?: string
+  type: SearchBelieverType
+  believer?: { id: string; name: string }
+  setBeliever: (believer: { id: string; name: string }) => void
   isOpen: boolean
-  onOpen: (type?: string) => void
+  onOpen: (type: SearchBelieverType) => void
   onClose: () => void
 }
 
 export const useSearchBelieverModalStore = create<SearchBelieverModalStoreType>(
   (set) => ({
     type: 'createBeliever',
-    isOpen: true,
+    setBeliever: (believer) => set({ believer }),
+    isOpen: false,
     onOpen: (type) => set({ isOpen: true, type }),
     onClose: () => set({ isOpen: false }),
   }),
 )
 
 function SearchBelieverModal() {
-  const { isOpen, onClose, type } = useSearchBelieverModalStore()
+  const { isOpen, onClose, type, believer } = useSearchBelieverModalStore()
 
-  const { onOpen: openCreateBelieverModal } = useCreateBelieverModalStore()
+  const { onOpen: openCreateBelieverModal } = useBelieverModalStore()
+  const { message } = useAntd()
 
-  console.log(type)
-  const map = {
-    createBeliever: {
-      title: '選取戶長',
-      closeButtonText: '創建新戶',
-      action: openCreateBelieverModal,
-    },
-  }
+  const utils = trpcQuery.useUtils()
 
-  const currentService = map[type as keyof typeof map]
+  const map = new Map<
+    SearchBelieverType,
+    {
+      title: string
+      action: (believer: { id: string; name: string }) => void
+      closeButtonText: string
+      closeAction: () => void
+    }
+  >([
+    [
+      'createBeliever',
+      {
+        title: '選取現有信眾',
+        action: (believer) => {
+          openCreateBelieverModal(believer)
+        },
+        closeButtonText: '創建新戶',
+        closeAction: () => openCreateBelieverModal(),
+      },
+    ],
+    [
+      'changeParent',
+      {
+        title: '更換戶長',
+        action: async (currentBeliever) => {
+          if (!believer) return
+          await trpcClient.believer.changeBelieverParent.mutate({
+            currentBelieverId: currentBeliever.id,
+            id: believer?.id,
+          })
+          utils.believer.invalidate()
+          message.success('更新成功')
+        },
+        closeButtonText: '自己為戶長',
+        closeAction: async () => {
+          if (!believer) return
+          await trpcClient.believer.changeBelieverParent.mutate({
+            id: believer?.id,
+          })
+          utils.believer.invalidate()
+          message.success('更新成功')
+        },
+      },
+    ],
+  ])
+
+  const currentService = map.get(type)
 
   const [inputData, setInputData] = useState<SearchBeliverType>({
     name: '',
@@ -74,7 +120,7 @@ function SearchBelieverModal() {
     {
       title: '姓名',
       dataIndex: 'name',
-      width: '10%',
+      width: '15%',
     },
     {
       title: '電話',
@@ -84,17 +130,18 @@ function SearchBelieverModal() {
     {
       title: '地址',
       dataIndex: 'address',
-      width: '20%',
+      width: '40%',
     },
     {
       width: '10%',
       title: '操作',
       dataIndex: 'action',
-      render: (_, { id }) => (
+      render: (_, { id, name }) => (
         <Button
           type="primary"
           onClick={() => {
-            console.log(id)
+            currentService?.action({ id, name })
+            onClose()
           }}
         >
           選擇
@@ -112,7 +159,14 @@ function SearchBelieverModal() {
         width={600}
         centered
         footer={[
-          <Button key="ok" type="primary" onClick={onClose}>
+          <Button
+            key="ok"
+            type="primary"
+            onClick={() => {
+              currentService?.closeAction()
+              onClose()
+            }}
+          >
             {currentService?.closeButtonText || '關閉'}
           </Button>,
         ]}

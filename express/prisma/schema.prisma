@@ -10,6 +10,47 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// model TaiwanCity {
+//   id        String   @id @default(cuid())
+//   rank      Int      @unique @default(autoincrement())
+//   name      String   @unique
+//   areas     Json     @default("[]")
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
+
+model City {
+  id   String @id @default(cuid())
+  rank Int    @unique @default(autoincrement())
+  name String @unique
+
+  areas Area[]
+}
+
+model Area {
+  id   String @id @default(cuid())
+  rank Int    @unique @default(autoincrement())
+  name String
+
+  cityId String
+  city   City   @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  roads Road[]
+
+  @@unique([cityId, name])
+}
+
+model Road {
+  id   String @id @default(cuid())
+  rank Int    @unique @default(autoincrement())
+  name String
+
+  areaId String
+  area   Area   @relation(fields: [areaId], references: [id], onDelete: Cascade)
+
+  @@unique([areaId, name])
+}
+
 model Role {
   id     String  @id @default(cuid())
   role   String  @unique
@@ -115,15 +156,6 @@ model RolesOnApis {
   @@map("Roles_On_Apis")
 }
 
-model TaiwanCity {
-  id        String   @id @default(cuid())
-  rank      Int      @unique @default(autoincrement())
-  name      String   @unique
-  areas     Json     @default("[]")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
 model Believer {
   id       String   @id @default(cuid())
   rank     Int      @unique @default(autoincrement())
@@ -132,10 +164,7 @@ model Believer {
   gender   String   @default("") // 性别
   birthday DateTime @default(now()) // 生日
   phone    String   @default("") // 電話
-
-  city    String @default("") // 縣市
-  area    String @default("") // 區域
-  address String @default("") // 地址
+  address  String   @default("") // 地址
 
   parentId String? // 戶長 id
   parent   Believer?  @relation("BelieverSelf", fields: [parentId], references: [id], onDelete: Cascade) // 戶長
@@ -181,11 +210,12 @@ model ServiceItem {
 }
 
 model ServiceItemDetail {
-  id    String @id @default(cuid())
-  rank  Int    @unique @default(autoincrement())
-  name  String // 燈座名稱
-  start Int    @default(1) // 開始位置
-  end   Int    @default(999) // 結束位置
+  id      String @id @default(cuid())
+  rank    Int
+  name    String // 燈座名稱
+  start   Int    @default(1) // 開始位置
+  current Int    @default(0) // 目前位置
+  end     Int    @default(999) // 結束位置
 
   serviceItemId String // 服務項目 id
 
