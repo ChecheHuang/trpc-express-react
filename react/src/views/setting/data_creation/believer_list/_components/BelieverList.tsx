@@ -1,6 +1,5 @@
 import DropdownButton from '@/components/buttons/DropdownButton'
 import ExtendedButton from '@/components/buttons/ExtendedButton'
-
 import { useServiceModalStore } from '@/components/modals/ServiceModal'
 import { GetColumnSearchProps } from '@/components/utils/GetColumnSearchProps'
 import { useWindowInfo } from '@/hooks/useHook'
@@ -12,6 +11,7 @@ import { Table } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { TableProps } from 'antd/lib/table/InternalTable'
 import type { SorterResult } from 'antd/lib/table/interface'
+import dayjs from 'dayjs'
 import lunisolar from 'lunisolar'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -29,12 +29,11 @@ const width = 60
 
 const BelieverList = () => {
   const [queryData, setQueryData] = useState<QueryDataType>(initQueryData)
-  const { data, isLoading } = trpcQuery.believer.getBelievers.useQuery(
-    queryData,
-    {
+  const { data: trpcQueryData, isLoading } =
+    trpcQuery.believer.getBelievers.useQuery(queryData, {
       keepPreviousData: true,
-    },
-  )
+    })
+  const data = trpcQueryData?.data || []
 
   const { windowHeight } = useWindowInfo()
   const handleChange: TableProps<DataType>['onChange'] = (
@@ -109,11 +108,11 @@ const BelieverList = () => {
         onChange={handleChange}
         scroll={{ x: tableWidth * 1.3, y: windowHeight - 260 }}
         columns={Columns()}
-        dataSource={data?.data}
+        dataSource={data.map((item) => ({ ...item, key: item.id }))}
         pagination={{
           position: ['bottomCenter'],
           pageSize: parseInt(queryData?._limit || '10'),
-          total: data?.total,
+          total: trpcQueryData?.total,
           current: parseInt(queryData?._page || '1'),
         }}
       />
@@ -130,7 +129,7 @@ const Columns: (config?: {
   const { message, modal } = useAntd()
   const navigate = useNavigate()
   const utils = trpcQuery.useUtils()
-  const { onOpen } = useServiceModalStore()
+  const { onOpen: onServiceModalOpen } = useServiceModalStore()
 
   const { mutate: deleteBeliever } =
     trpcQuery.believer.deleteBeliever.useMutation({
@@ -171,6 +170,9 @@ const Columns: (config?: {
       title: '生日',
       dataIndex: 'birthday',
       width: 130,
+      render: (_, { birthday }) => (
+        <div>{dayjs(birthday).format('YYYY-MM-DD HH:mm')}</div>
+      ),
     },
     {
       title: '生肖',
@@ -209,40 +211,27 @@ const Columns: (config?: {
       title: '操作',
       fixed: 'right',
       width,
-      render: (_, { id, name }) => {
+      render: (_, item) => {
+        const { id, name, services } = item
         return (
-          <>
-            <ExtendedButton type="primary" onClick={() => onOpen({id, name})}>
-              服務
-            </ExtendedButton>
-          </>
-          // <DropdownButton>
-          //   <ExtendedButton type="primary" onClick={() => navigate(`${id}`)}>
-          //     修改
-          //   </ExtendedButton>
-          //   <ExtendedButton type="success" onClick={() => onOpen(id)}>
-          //     服務
-          //   </ExtendedButton>
-          //   <ExtendedButton
-          //     onClick={() => {
-          //       modal?.confirm({
-          //         title: <div>{name}</div>,
-          //         icon: <ExclamationCircleOutlined />,
-          //         content: '刪除資料不可回復，確認刪除?',
-          //         okText: '確認',
-          //         cancelText: '取消',
-          //         onOk: () => {
-          //           deleteBeliever({ id })
-          //         },
-          //       })
-          //     }}
-          //     type="primary"
-          //     danger
-          //     disabled={false}
-          //   >
-          //     刪除
-          //   </ExtendedButton>
-          // </DropdownButton>
+          <DropdownButton
+            content={<ExtendedButton type="primary">服務</ExtendedButton>}
+          >
+            {services.map((service) => (
+              <ExtendedButton
+                type="primary"
+                key={service.id}
+                onClick={() =>
+                  onServiceModalOpen({
+                    believer: { id, name },
+                    serviceCategory: service,
+                  })
+                }
+              >
+                {service.category}
+              </ExtendedButton>
+            ))}
+          </DropdownButton>
         )
       },
     },

@@ -74,13 +74,7 @@ export const believer = router({
         },
         where,
       })
-      const result = data.map((item) => {
-        return {
-          key: item.id,
-          ...item,
-        }
-      })
-      return result
+      return data
     }),
 
   changeParentIdByBelieverId: procedure.input(z.string()).mutation(async ({ input }) => {
@@ -179,13 +173,18 @@ export const believer = router({
           z.object({
             parentId: z.string().nullable(),
             id: z.string(),
-            key: z.string(),
             rank: z.number(),
             name: z.string(),
             gender: z.string(),
-            birthday: z.string(),
+            birthday: z.date(),
             phone: z.string(),
             address: z.string(),
+            services: z.array(
+              z.object({
+                id: z.string(),
+                category: z.string(),
+              })
+            ),
           })
         ),
         total: z.number(),
@@ -210,22 +209,27 @@ export const believer = router({
         where,
       })
 
-      const believers = (
-        await prismadb.believer.findMany({
-          select: { parentId: true, ...select },
-          take,
-          skip,
-          orderBy,
-          where,
-        })
-      ).map(({ birthday, ...believer }) => ({
-        key: believer.id,
-        ...believer,
-        birthday: dayjs(birthday).format('YYYY-MM-DD HH:mm:ss'),
-      }))
+      const services = await prismadb.service.findMany({
+        select: {
+          id: true,
+          category: true,
+        },
+        orderBy: {
+          id: 'asc',
+        },
+      })
+      console.log(services)
+
+      const believers = await prismadb.believer.findMany({
+        select: { parentId: true, ...select },
+        take,
+        skip,
+        orderBy,
+        where,
+      })
       const result = {
         total,
-        data: believers,
+        data: believers.map((item) => ({ ...item, services })),
       }
       return result
     }),
@@ -241,7 +245,6 @@ export const believer = router({
     .query(async ({ input }) => {
       const { _limit, _page, orderValue } = input
       const { orderKey, name, address, phone } = input
-
       const where = {
         parentId: null,
         name: name ? { contains: name } : undefined,
@@ -258,30 +261,18 @@ export const believer = router({
         where,
       })
 
-      const believers = (
-        await prismadb.believer.findMany({
-          select: {
-            ...select,
-            children: {
-              select,
-            },
+      const believers = await prismadb.believer.findMany({
+        select: {
+          ...select,
+          children: {
+            select,
           },
-          take,
-          skip,
-
-          orderBy,
-          where,
-        })
-      ).map(({ birthday, children, ...believer }) => ({
-        key: believer.id,
-        ...believer,
-        birthday: dayjs(birthday).format('YYYY-MM-DD HH:mm:ss'),
-        children: children.map(({ birthday, ...child }) => ({
-          key: child.id,
-          ...child,
-          birthday: dayjs(birthday).format('YYYY-MM-DD HH:mm:ss'),
-        })),
-      }))
+        },
+        take,
+        skip,
+        orderBy,
+        where,
+      })
       const result = {
         total,
         data: believers,

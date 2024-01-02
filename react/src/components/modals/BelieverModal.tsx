@@ -2,7 +2,7 @@ import DropdownButton from '../buttons/DropdownButton'
 import ExtendedButton from '../buttons/ExtendedButton'
 import AddressInput from '../form/AddressInput'
 import { useSearchBelieverModalStore } from './SearchBelieverModal'
-import { useUpdateEffect } from '@/hooks/useHook'
+import { useUpdateEffect, useWindowInfo } from '@/hooks/useHook'
 import { useAntd } from '@/provider/AntdProvider'
 import { trpcClient, trpcQuery } from '@/provider/TrpcProvider'
 import { TrpcInputs, TrpcOutputs } from '@/types/trpc'
@@ -40,22 +40,32 @@ type DataType = Override<
   { key: string; birthday: dayjs.Dayjs }
 >
 
-type CreateFormData = Override<
+type CreateFormType = Override<
   TrpcInputs['believer']['createBeliever'],
   {
     birthday: Dayjs
   }
 >
 
-function CreateBelieverModal() {
+type UpdateFormType = Override<
+  TrpcInputs['believer']['updateBeliever'],
+  {
+    birthday: Dayjs
+  }
+>
+
+function BelieverModal() {
   const { isOpen, onClose, believer, onOpen } = useBelieverModalStore()
+
+  const { windowHeight } = useWindowInfo()
 
   const {
     onOpen: openSearchBelieverModal,
     setBeliever: setSearchBeleiverModelBeliever,
   } = useSearchBelieverModalStore()
 
-  const [form] = Form.useForm<CreateFormData>()
+  const [updateForm] = Form.useForm<UpdateFormType>()
+  const [createForm] = Form.useForm<CreateFormType>()
   const [editKey, setEditKey] = useState<string | null>(null)
   const { message } = useAntd()
 
@@ -71,54 +81,30 @@ function CreateBelieverModal() {
 
   const utils = trpcQuery.useUtils()
 
-  const [newBeliever, setNewBeliever] = useState<DataType[]>([])
-  const handleAdd = () => {
-    setNewBeliever([
-      {
-        key: `new${newBeliever.length + 1}`,
-        id: '',
-        rank: 0,
-        name: '',
-        birthday: dayjs(),
-        address: '',
-        phone: '',
-        gender: '',
-      },
-    ])
-    form.setFieldsValue({
-      name: '新信眾',
-      birthday: dayjs(),
-      address: parent?.address || '',
-      phone: '0912345678',
-      gender: '男',
-    })
-    setEditKey(null)
-  }
-
   const handleEdit = async () => {
-    const values = await form.validateFields()
+    const values = await updateForm.validateFields()
     await trpcClient.believer.updateBeliever.mutate({
       ...values,
       id: editKey as string,
       birthday: dayjs(values.birthday).format('YYYY-MM-DD HH:mm:ss'),
     })
-    form.resetFields()
+    updateForm.resetFields()
     utils.believer.invalidate()
     message.success('更新成功')
     setEditKey(null)
   }
   const handleCreate = async () => {
-    const { birthday, ...values } = await form.validateFields()
+    const { birthday, ...values } = await createForm.validateFields()
     const newBeliever = await trpcClient.believer.createBeliever.mutate({
       ...values,
       birthday: dayjs(birthday).format('YYYY-MM-DD HH:mm:ss'),
       parentId: parent?.id || null,
     })
-    setNewBeliever([])
-    form.resetFields()
+    createForm.resetFields()
     utils.believer.invalidate()
     message.success('新增成功')
     onClose()
+    setIsCreateModalOpen(false)
     onOpen(newBeliever)
   }
 
@@ -147,7 +133,7 @@ function CreateBelieverModal() {
       dataIndex: 'phone',
       width: '140px',
       render: (_, props) => {
-        if (props.key.startsWith('new') || props.key === editKey) {
+        if (props.key === editKey) {
           return (
             <Form.Item
               className="mb-0"
@@ -166,7 +152,7 @@ function CreateBelieverModal() {
       dataIndex: 'birthday',
       width: '200px',
       render: (_, props) => {
-        if (props.key.startsWith('new') || props.key === editKey) {
+        if (props.key === editKey) {
           return (
             <Form.Item
               className="mb-0"
@@ -191,7 +177,7 @@ function CreateBelieverModal() {
       dataIndex: 'gender',
 
       render: (_, props) => {
-        if (props.key.startsWith('new') || props.key === editKey) {
+        if (props.key === editKey) {
           return (
             <Form.Item
               className="mb-0"
@@ -216,11 +202,11 @@ function CreateBelieverModal() {
       title: '地址',
       dataIndex: 'address',
       render: (_, props) => {
-        if (props.key.startsWith('new') || props.key === editKey) {
+        if (props.key === editKey) {
           return (
             <AddressInput
               className="mb-0"
-              form={form}
+              form={updateForm}
               name={'address'}
               label={false}
               direction="col"
@@ -234,22 +220,6 @@ function CreateBelieverModal() {
       title: '操作',
       width: '90px',
       render: (_, props) => {
-        if (props.key.startsWith('new')) {
-          return (
-            <div className="flex flex-col gap-2">
-              <Button type="primary" onClick={handleCreate}>
-                新增
-              </Button>
-              <ExtendedButton
-                onClick={() => setNewBeliever([])}
-                htmlType="button"
-                type="info"
-              >
-                放棄
-              </ExtendedButton>
-            </div>
-          )
-        }
         if (props.key === editKey) {
           return (
             <div className="flex flex-col gap-2">
@@ -276,14 +246,13 @@ function CreateBelieverModal() {
               <ExtendedButton
                 onClick={() => {
                   setEditKey(props.key)
-                  form.setFieldsValue({
+                  updateForm.setFieldsValue({
                     name: props.name,
                     birthday: props.birthday,
                     phone: props.phone,
                     gender: props.gender,
                     address: props.address,
                   })
-                  setNewBeliever([])
                 }}
                 type="primary"
               >
@@ -300,7 +269,7 @@ function CreateBelieverModal() {
                   }}
                   type="primary"
                 >
-                  更換戶長
+                  加入其他戶
                 </ExtendedButton>
               )}
             </DropdownButton>
@@ -309,16 +278,69 @@ function CreateBelieverModal() {
       },
     },
   ]
-  const dataSource = data
-    .map((item) => ({
-      ...item,
-      key: item.id,
-      birthday: dayjs(item.birthday),
-    }))
-    .concat(newBeliever)
+
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   return (
     <>
+      <Modal
+        title="新增信眾"
+        open={isCreateModalOpen}
+        onOk={handleCreate}
+        onCancel={() => {
+          createForm.resetFields()
+          setIsCreateModalOpen(false)
+        }}
+      >
+        <Form form={createForm} className="grid grid-cols-2 gap-x-2">
+          <Form.Item
+            label="姓名"
+            name="name"
+            rules={[{ required: true, message: '輸入姓名' }]}
+          >
+            <Input placeholder="請輸入姓名" autoFocus />
+          </Form.Item>
+          <Form.Item
+            label="電話"
+            name="phone"
+            rules={[{ required: true, message: '輸入電話' }]}
+          >
+            <Input placeholder="輸入電話" />
+          </Form.Item>
+          <Form.Item
+            label="生日"
+            name="birthday"
+            rules={[{ required: true, message: '輸入生日' }]}
+          >
+            <DatePicker
+              className="w-full"
+              format={'YYYY-MM-DD HH:mm:ss'}
+              showTime
+            />
+          </Form.Item>
+          <Form.Item
+            label="性別"
+            name="gender"
+            rules={[{ required: true, message: '選擇性別' }]}
+          >
+            <Select
+              options={[
+                { value: '男', label: '男' },
+                { value: '女', label: '女' },
+                { value: '其他', label: '其他' },
+              ]}
+              placeholder="性別"
+            />
+          </Form.Item>
+          <AddressInput
+            className="col-span-full"
+            form={updateForm}
+            name={'address'}
+            label={'地址'}
+            direction="col"
+          />
+        </Form>
+      </Modal>
       <Modal
         destroyOnClose
         title={believer ? `信眾:${believer?.name}` : `信眾`}
@@ -332,41 +354,42 @@ function CreateBelieverModal() {
           </Button>,
         ]}
       >
-        {isFetching ? (
-          <div className="flex w-full justify-center">
-            <Spin />
+        <Form form={updateForm}>
+          <div className="mb-2 flex justify-end">
+            <Button onClick={() => setIsCreateModalOpen(true)}>
+              新增信眾至該戶
+            </Button>
           </div>
-        ) : (
-          <>
-            <Form form={form}>
-              <Button onClick={handleAdd}>增加</Button>
-              <Table
-                rowSelection={{
-                  type: 'radio',
-                  selectedRowKeys: [parent?.id || ('' as React.Key)],
-                  onChange: async (selectedRowKeys: React.Key[]) => {
-                    const id = selectedRowKeys[0] as string
-                    await trpcClient.believer.changeParentIdByBelieverId.mutate(
-                      id,
-                    )
-                    utils.believer.invalidate()
-                    message.success('更新成功')
-                    //todo 更新父親id
-                  },
-                  getCheckboxProps: (record) => ({
-                    disabled: record.key.startsWith('new'),
-                  }),
-                }}
-                columns={columns}
-                dataSource={dataSource}
-                pagination={{ pageSize: 5 }}
-              />
-            </Form>
-          </>
-        )}
+          <Table
+            scroll={{ y: windowHeight - 230 }}
+            loading={isFetching}
+            rowSelection={{
+              columnTitle: '戶長',
+              columnWidth: '50px',
+              type: 'radio',
+              selectedRowKeys: [parent?.id || ('' as React.Key)],
+              onChange: async (selectedRowKeys: React.Key[]) => {
+                const id = selectedRowKeys[0] as string
+                await trpcClient.believer.changeParentIdByBelieverId.mutate(id)
+                utils.believer.invalidate()
+                message.success('更新成功')
+              },
+              getCheckboxProps: (record) => ({
+                disabled: record.key.startsWith('new'),
+              }),
+            }}
+            columns={columns}
+            dataSource={data.map((item) => ({
+              ...item,
+              key: item.id,
+              birthday: dayjs(item.birthday),
+            }))}
+            pagination={false}
+          />
+        </Form>
       </Modal>
     </>
   )
 }
 
-export default CreateBelieverModal
+export default BelieverModal

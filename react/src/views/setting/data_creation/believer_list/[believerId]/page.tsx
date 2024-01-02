@@ -23,7 +23,6 @@ const CustomerIdPage = () => {
   const utils = trpcQuery.useUtils()
   const { data, refetch, isLoading } =
     trpcQuery.believer.getBelieverById.useQuery(id)
-  console.log(data)
 
   if (isLoading) return <Loading />
 

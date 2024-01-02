@@ -139,15 +139,14 @@ export const service = router({
   }),
   getServices: privateProcedure
     .input(
-      z
-        .object({
-          year: z.number(),
-        })
-        .optional()
-        .default({ year: dayjs().year() - 1911 })
+      z.object({
+        year: z.number(),
+        believerId: z.string(),
+      })
     )
     .query(async ({ input }) => {
-      const { year } = input
+      const { year, believerId } = input
+      // console.log(believerId)
       const service = await prismadb.service.findMany({
         select: {
           id: true,
@@ -168,11 +167,6 @@ export const service = router({
         },
       })
 
-      const result = service.map((item) => ({
-        key: item.id,
-        ...item,
-      }))
-
-      return result
+      return service
     }),
 })

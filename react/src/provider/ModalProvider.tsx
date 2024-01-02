@@ -1,4 +1,4 @@
-import CreateBelieverModal from '@/components/modals/BelieverModal'
+import BelieverModal from '@/components/modals/BelieverModal'
 import SearchBelieverModal from '@/components/modals/SearchBelieverModal'
 import ServiceModal from '@/components/modals/ServiceModal'
 
@@ -7,7 +7,7 @@ const ModalProvider = ({ children }: { children: React.ReactNode }) => {
     <>
       <ServiceModal />
       <SearchBelieverModal />
-      <CreateBelieverModal />
+      <BelieverModal />
       {children}
     </>
   )

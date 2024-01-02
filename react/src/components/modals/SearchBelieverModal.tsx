@@ -110,7 +110,7 @@ function SearchBelieverModal() {
     500,
     [inputData],
   )
-  const { data, isLoading } = trpcQuery.believer.searchBeliever.useQuery(
+  const { data = [], isLoading } = trpcQuery.believer.searchBeliever.useQuery(
     searchValue,
     {
       keepPreviousData: true,
@@ -204,7 +204,7 @@ function SearchBelieverModal() {
           className="min-h-[340px] cursor-pointer"
           loading={isLoading}
           size="small"
-          dataSource={data}
+          dataSource={data.map((item) => ({ ...item, key: item.id }))}
           columns={columns}
           pagination={{
             position: ['bottomCenter'],

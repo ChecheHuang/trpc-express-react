@@ -1,13 +1,12 @@
+import { logserver } from '../src/lib/plugin'
 import { trpcRouter } from '../src/routers/trpc'
-import citys from './citys.json'
 import believers from './believers.json'
+import citys from './citys.json'
 import routes from './routes.json'
 import services from './services.json'
-// import taiwanCity from './taiwanCity.json'
 import { PrismaClient, Prisma } from '@prisma/client'
 import bcrypt from 'bcrypt'
 import chalk from 'chalk'
-import { logserver } from '../src/lib/plugin'
 
 const prismadb = new PrismaClient()
 
@@ -26,7 +25,7 @@ const deleteData = async () => {
   await prismadb.$queryRaw`ALTER TABLE route AUTO_INCREMENT = 1;`
   await prismadb['service'].deleteMany()
   await prismadb.$queryRaw`ALTER TABLE service AUTO_INCREMENT = 1;`
-  // await prismadb['order'].deleteMany()
+  await prismadb['order'].deleteMany()
   // await prismadb.$queryRaw`ALTER TABLE order AUTO_INCREMENT = 1;`
 }
 
@@ -180,37 +179,37 @@ const init = async () => {
     }
   })()
 
-  //todo 創建訂單
-  const orderSeed = await (async () => {
-    const userId = (await prismadb.user.findFirst())?.id as string
-    const totalBelieverIds = (await prismadb.believer.findMany()).map((believer) => believer.id)
-    const totalService = (
-      await prismadb.serviceItem.findMany({
-        select: {
-          id: true,
-          price: true,
-          year: true,
-        },
-      })
-    ).map((serviceItem) => {
-      return {
-        serviceItemId: serviceItem.id,
-        price: serviceItem.price,
-        year: serviceItem.year,
-      }
-    })
-    for (const believerId of totalBelieverIds) {
-      for (const service of totalService) {
-        await prismadb.order.create({
-          data: {
-            userId,
-            believerId,
-            ...service,
-          },
-        })
-      }
-    }
-  })()
+  // //todo 創建訂單
+  // const orderSeed = await (async () => {
+  //   const userId = (await prismadb.user.findFirst())?.id as string
+  //   const totalBelieverIds = (await prismadb.believer.findMany()).map((believer) => believer.id)
+  //   const totalService = (
+  //     await prismadb.serviceItem.findMany({
+  //       select: {
+  //         id: true,
+  //         price: true,
+  //         year: true,
+  //       },
+  //     })
+  //   ).map((serviceItem) => {
+  //     return {
+  //       serviceItemId: serviceItem.id,
+  //       price: serviceItem.price,
+  //       year: serviceItem.year,
+  //     }
+  //   })
+  //   for (const believerId of totalBelieverIds) {
+  //     for (const service of totalService) {
+  //       await prismadb.order.create({
+  //         data: {
+  //           userId,
+  //           believerId,
+  //           ...service,
+  //         },
+  //       })
+  //     }
+  //   }
+  // })()
 }
 
 async function main() {
