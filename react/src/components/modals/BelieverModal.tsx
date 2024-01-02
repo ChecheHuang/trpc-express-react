@@ -180,7 +180,7 @@ function BelieverModal() {
         if (props.key === editKey) {
           return (
             <Form.Item
-              className="mb-0"
+              className="mx-[0px] mb-0"
               name="gender"
               rules={[{ required: true, message: '請輸入性別' }]}
             >
@@ -269,7 +269,7 @@ function BelieverModal() {
                   }}
                   type="primary"
                 >
-                  加入其他戶
+                  轉移至其他戶
                 </ExtendedButton>
               )}
             </DropdownButton>
@@ -356,16 +356,26 @@ function BelieverModal() {
       >
         <Form form={updateForm}>
           <div className="mb-2 flex justify-end">
-            <Button onClick={() => setIsCreateModalOpen(true)}>
+            <ExtendedButton
+              type="info"
+              onClick={() => setIsCreateModalOpen(true)}
+            >
               新增信眾至該戶
-            </Button>
+            </ExtendedButton>
           </div>
           <Table
+            className='td-no-padding'
             scroll={{ y: windowHeight - 230 }}
             loading={isFetching}
             rowSelection={{
-              columnTitle: '戶長',
-              columnWidth: '50px',
+              columnTitle: (
+                <div>
+                  戶長
+                  <br />
+                  (勾選)
+                </div>
+              ),
+              columnWidth: '55px',
               type: 'radio',
               selectedRowKeys: [parent?.id || ('' as React.Key)],
               onChange: async (selectedRowKeys: React.Key[]) => {

@@ -4,6 +4,7 @@ import { TRPCError } from '@trpc/server'
 export const getBelieverListById = async (id: string) => {
   const select = {
     id: true,
+    familyId: true,
     rank: true,
     name: true,
     gender: true,

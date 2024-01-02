@@ -206,7 +206,7 @@ model ServiceItem {
   service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade) // 服務
 
   serviceItemDetails ServiceItemDetail[] /// 服務項目明細
-  Order              Order[]
+  orders             Order[]
 }
 
 model ServiceItemDetail {
@@ -245,4 +245,5 @@ model Order {
 
   serviceItemId String
   serviceItem   ServiceItem @relation(fields: [serviceItemId], references: [id], onDelete: Cascade)
+
 }

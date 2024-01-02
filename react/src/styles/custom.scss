@@ -69,3 +69,10 @@
     content: '*';
   }
 }
+
+.td-no-padding .ant-table-container {
+  .ant-table-cell {
+    padding-left: 2px;
+    padding-right: 2px;
+  }
+}

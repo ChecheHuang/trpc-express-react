@@ -12,8 +12,10 @@ import { useMemo, useRef, useState } from 'react'
 import { create } from 'zustand'
 
 type ServiceModalStoreType = {
-  believer?: { id: string; name: string }
-  serviceCategory?: { id: string; category: string }
+  info?: {
+    believer: { id: string; name: string }
+    serviceCategory: { id: string; category: string }
+  }
   isOpen: boolean
   onOpen: (info: {
     believer: { id: string; name: string }
@@ -25,33 +27,104 @@ type ServiceModalStoreType = {
 export const useServiceModalStore = create<ServiceModalStoreType>((set) => ({
   believer: undefined,
   isOpen: false,
-  onOpen: ({ believer, serviceCategory }) =>
-    set({ isOpen: true, believer, serviceCategory }),
+  onOpen: (info) => set({ isOpen: true, info }),
   onClose: () => set({ isOpen: false }),
 }))
 
-type DataType = GetArrType<TrpcOutputs['service']['getServices']>
+type DataType = GetArrType<TrpcOutputs['service']['getServices']['list']>
 
 function ServiceModal() {
-  const { isOpen, onClose, believer, serviceCategory } = useServiceModalStore()
-  const { data: result, isFetching } =
-    trpcQuery.believer.getBelieverById.useQuery(believer?.id as string, {
-      refetchOnWindowFocus: false,
-      enabled: !!believer?.id,
+  const [serviceYear, setServiceYear] = useState(
+    new Date().getFullYear() - 1911,
+  )
+  const { isOpen, onClose, info } = useServiceModalStore()
+  const believer = info?.believer
+  const serviceCategory = info?.serviceCategory
+  const { message, modal } = useAntd()
+  const { name } = useUserStore()
+  const [form] = Form.useForm<
+    Record<
+      string,
+      {
+        id: string
+        name: string
+        price: number
+      }[]
+    >
+  >()
+  const totalPrice = Form.useWatch(
+    (values) =>
+      Object.values(values).reduce((acc, array) => {
+        return acc + array.reduce((sum, { price }) => sum + (price || 0), 0)
+      }, 0),
+    { form },
+  )
+
+  const { data, isLoading, refetch } = trpcQuery.service.getServices.useQuery(
+    {
+      year: serviceYear,
+      believerId: believer?.id as string,
+      serviceId: serviceCategory?.id as string,
+    },
+    {
+      enabled: !!info,
+    },
+  )
+
+  const list = data?.list || []
+  const parent = data?.parent || { name: '', familyId: 0 }
+
+  const columns: ColumnsType<DataType> = [
+    {
+      title: '姓名',
+      rowScope: 'row',
+      dataIndex: 'name',
+      width: '100px',
+    },
+    {
+      title: ` ${serviceYear}年度${serviceCategory?.category}服務項目`,
+      render: (_, { name, serviceItems, id }) => {
+        return (
+          <>
+            <Form.Item initialValue={[]} name={id} className="mb-0">
+              <Checkbox.Group>
+                {serviceItems.map((item) => {
+                  return (
+                    <Checkbox
+                      disabled={item.isOrder}
+                      value={item}
+                      key={item.id}
+                    >
+                      {item.name}
+                    </Checkbox>
+                  )
+                })}
+              </Checkbox.Group>
+            </Form.Item>
+          </>
+        )
+      },
+    },
+  ]
+
+  const handleSubmit = async () => {
+    const values = await form.validateFields()
+    const submitData = Object.entries(values).map(
+      ([believerId, serviceItems]) => ({
+        believerId,
+        serviceItemIds: serviceItems.map((item: { id: string }) => item.id),
+      }),
+    )
+    const totalPrice = await trpcClient.order.createOrder.mutate(submitData)
+    refetch()
+    modal.confirm({
+      title: '是否列印',
+      content: `總金額為 ${totalPrice} 元`,
+      onOk: () => {
+        form.resetFields()
+      },
     })
-  const data = result?.data || []
-
-  console.log(believer)
-  console.log(serviceCategory)
-
-  const items: TabsProps['items'] =
-    data.map(({ name, id }, index) => {
-      return {
-        key: index.toString(),
-        label: name,
-        children: <ServiceForm believerId={id} />,
-      }
-    }) || []
+  }
 
   return (
     <>
@@ -68,128 +141,44 @@ function ServiceModal() {
           </Button>,
         ]}
       >
-        {isFetching ? (
-          <div className="flex h-[400px] w-full items-center justify-center">
-            <Spin size="large" />
+        <Form form={form} className="grid grid-cols-3  gap-x-3">
+          <Form.Item label="年度">
+            <Select
+              value={serviceYear}
+              options={[
+                { label: '112', value: 112 },
+                { label: '113', value: 113 },
+              ]}
+              onChange={(value) => setServiceYear(value)}
+            />
+          </Form.Item>
+          <Form.Item label="總金額">
+            <Input value={totalPrice} disabled />
+          </Form.Item>
+          <Form.Item label="戶長">
+            <Input value={parent.name} disabled />
+          </Form.Item>
+          <Form.Item label="經辦員">
+            <Input value={name} disabled />
+          </Form.Item>
+          <div className="col-span-3">
+            <Table
+              loading={isLoading}
+              size="small"
+              columns={columns}
+              dataSource={list.map((item) => ({ ...item, key: item.id }))}
+              pagination={false}
+            />
           </div>
-        ) : (
-          <Tabs defaultActiveKey="0" items={items} />
-        )}
+          <Form.Item className="col-span-full mb-0 mt-2 flex justify-center">
+            <Button onClick={handleSubmit} type="primary">
+              送出
+            </Button>
+          </Form.Item>
+        </Form>
       </Modal>
     </>
   )
 }
 
 export default ServiceModal
-
-type ServiceFormProps = {
-  believerId: string
-}
-
-function ServiceForm({ believerId }: ServiceFormProps) {
-  const [serviceYear, setServiceYear] = useState(
-    new Date().getFullYear() - 1911,
-  )
-  const { message, modal } = useAntd()
-  const { name } = useUserStore()
-
-  const { data, isLoading } = trpcQuery.service.getServices.useQuery({
-    year: serviceYear,
-    believerId,
-  })
-
-  const [form] = Form.useForm()
-
-  const totalPrice = Form.useWatch(
-    (values) => {
-      let total = 0
-      for (const arrayKey in values) {
-        const array = values[arrayKey]
-        for (const { price } of array) {
-          total += price || 0
-        }
-      }
-      return total
-    },
-    { form },
-  )
-  const handleSubmit = async () => {
-    const values = await form.validateFields()
-    let serviceItemIds: string[] = []
-    for (const arrayKey in values) {
-      const array = values[arrayKey].map((item: { id: string }) => item.id)
-      serviceItemIds = [...serviceItemIds, ...array]
-    }
-    await trpcClient.order.createOrder.mutate({
-      believerId,
-      serviceItemIds,
-    })
-  }
-
-  const col: ColumnsType<DataType> = [
-    {
-      title: '類別',
-      rowScope: 'row',
-      dataIndex: 'category',
-      width: '50px',
-    },
-    {
-      title: '項目',
-      render: (_, { category, serviceItems }) => {
-        return (
-          <Form.Item initialValue={[]} name={category} className="mb-0">
-            <Checkbox.Group>
-              {serviceItems.map((item) => (
-                <Checkbox value={item} key={item.id}>
-                  {item.name}
-                </Checkbox>
-              ))}
-            </Checkbox.Group>
-          </Form.Item>
-        )
-      },
-    },
-  ]
-  if (isLoading) {
-    return (
-      <div className="flex h-[400px] w-full items-center justify-center">
-        <Spin size="large" />
-      </div>
-    )
-  }
-  return (
-    <div className="h-[400px] w-full p-4 ">
-      <Form form={form} className="grid grid-cols-3  gap-x-3">
-        <Form.Item label="年度">
-          <Select
-            value={serviceYear}
-            options={[
-              { label: '112', value: 112 },
-              { label: '113', value: 113 },
-            ]}
-            onChange={(value) => setServiceYear(value)}
-          />
-        </Form.Item>
-        <Form.Item label="總金額">
-          <Input value={totalPrice} disabled />
-        </Form.Item>
-        <Form.Item label="經辦員">
-          <Input value={name} disabled />
-        </Form.Item>
-        <div className="col-span-3">
-          <Table
-            size="small"
-            dataSource={data?.map((item) => ({ ...item, key: item.id }))}
-            columns={col}
-            pagination={false}
-          />
-        </div>
-        <Form.Item className="col-span-full mb-0 mt-2 flex justify-center">
-          <Button type="primary" onClick={handleSubmit}>
-            送出
-          </Button>
-        </Form.Item>
-      </Form>
-    </div>
-  )
-}

@@ -158,9 +158,10 @@ function SearchBelieverModal() {
         open={isOpen}
         width={600}
         centered
-        footer={[
+        footer={[]}
+      >
+        <div className="w-full">
           <Button
-            key="ok"
             type="primary"
             onClick={() => {
               currentService?.closeAction()
@@ -168,9 +169,9 @@ function SearchBelieverModal() {
             }}
           >
             {currentService?.closeButtonText || '關閉'}
-          </Button>,
-        ]}
-      >
+          </Button>
+          或選擇現有信眾
+        </div>
         <div className="mb-1 flex gap-2">
           <Form.Item className="mb-0" label="姓名">
             <Input

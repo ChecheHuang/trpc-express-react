@@ -218,7 +218,6 @@ export const believer = router({
           id: 'asc',
         },
       })
-      console.log(services)
 
       const believers = await prismadb.believer.findMany({
         select: { parentId: true, ...select },
