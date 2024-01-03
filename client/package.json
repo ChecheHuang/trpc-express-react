@@ -10,7 +10,7 @@
     "build:dev": "vite build  tsc ",
     "preview": "vite preview",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "route": "node scripts/createRouter.js && cd ../express && npm run db:seed "
+    "route": "node scripts/createRouter.js && cd ../server && npm run db:seed "
   },
   "dependencies": {
     "@ant-design/happy-work-theme": "^1.0.0",

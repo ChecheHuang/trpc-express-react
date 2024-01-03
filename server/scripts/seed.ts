@@ -11,6 +11,7 @@ import chalk from 'chalk'
 const prismadb = new PrismaClient()
 
 const deleteData = async () => {
+  await prismadb['temple'].deleteMany()
   await prismadb['city'].deleteMany()
   await prismadb.$queryRaw`ALTER TABLE city AUTO_INCREMENT = 1;`
   await prismadb['believer'].deleteMany()
@@ -152,6 +153,20 @@ const init = async () => {
         })
       }
     }
+  })()
+
+  // todo 創建宮廟資料
+  const templeSeed = await (async () => {
+    await prismadb.temple.create({
+      data: {
+        name: '海光宮',
+        address: '臺北市士林區葫蘆街87號',
+        phone: '0228127626',
+        principal: '王大明',
+        wordsOfThanksForService: '虔誠之心神人感激特以此狀以表謝意',
+        wordsOfThanksForDonation: '虔誠之心神人感激特以此狀以表謝意',
+      },
+    })
   })()
 
   //todo 創建信眾資料

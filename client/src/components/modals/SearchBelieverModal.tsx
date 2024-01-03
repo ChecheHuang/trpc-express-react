@@ -54,23 +54,25 @@ function SearchBelieverModal() {
       action: (believer: { id: string; name: string }) => void
       closeButtonText: string
       closeAction: () => void
+      remindText?: string
     }
   >([
     [
       'createBeliever',
       {
-        title: '選取現有信眾',
+        title: '新增信眾',
         action: (believer) => {
           openCreateBelieverModal(believer)
         },
         closeButtonText: '創建新戶',
         closeAction: () => openCreateBelieverModal(),
+        remindText: '或選擇現有信眾',
       },
     ],
     [
       'changeParent',
       {
-        title: '更換戶長',
+        title: '轉移至其他戶',
         action: async (currentBeliever) => {
           if (!believer) return
           await trpcClient.believer.changeBelieverParent.mutate({
@@ -80,7 +82,8 @@ function SearchBelieverModal() {
           utils.believer.invalidate()
           message.success('更新成功')
         },
-        closeButtonText: '自己為戶長',
+        closeButtonText: '以自己為新戶長',
+        remindText: '或與選擇的信眾加入同一戶',
         closeAction: async () => {
           if (!believer) return
           await trpcClient.believer.changeBelieverParent.mutate({
@@ -172,7 +175,7 @@ function SearchBelieverModal() {
           >
             {currentService?.closeButtonText || '關閉'}
           </Button>
-          或選擇現有信眾
+          {currentService?.remindText && currentService.remindText}
         </div>
         <div className="mb-1 flex gap-2">
           <Form.Item className="mb-0" label="姓名">

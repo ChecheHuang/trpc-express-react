@@ -1,12 +1,14 @@
-import { useUpdateEffect } from '@/hooks/useHook'
-import { useRouter } from '@/hooks/useRouter'
-import { cn } from '@/lib/utils'
-import { useTheme } from '@/store/useTheme'
 import type { MenuProps } from 'antd'
 import { Image, Menu } from 'antd'
 import { Resizable } from 're-resizable'
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+
+import { useUpdateEffect } from '@/hooks/useHook'
+import { useRouter } from '@/hooks/useRouter'
+import { cn } from '@/lib/utils'
+import { useTemple } from '@/store/useTemple'
+import { useTheme } from '@/store/useTheme'
 
 interface SidebarProps {
   collapsed: boolean
@@ -18,6 +20,7 @@ const Sidebar = ({ collapsed }: SidebarProps) => {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const { menu, keyArr } = useRouter()
+  const { temple } = useTemple()
 
   const [selectKeys, setSelectKeys] = useState<string[]>([pathname])
   const [openKeys, setOpenKeys] = useState<string[]>([
@@ -78,7 +81,7 @@ const Sidebar = ({ collapsed }: SidebarProps) => {
                   mode === 'dark' ? ' text-light' : ' text-dark',
                 )}
               >
-                海光宮
+                {temple.name}
               </div>
             )}
           </div>

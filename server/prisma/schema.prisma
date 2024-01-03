@@ -156,6 +156,19 @@ model RolesOnApis {
   @@map("Roles_On_Apis")
 }
 
+model Temple {
+  id                       String @id @default(cuid())
+  name                     String @default("") // 名稱
+  phone                    String @default("") // 電話
+  address                  String @default("") // 地址
+  principal                String @default("") // 負責人
+  wordsOfThanksForService  String @default("") // 服務感謝詞
+  wordsOfThanksForDonation String @default("") // 捐獻感謝詞
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Believer {
   id       String   @id @default(cuid())
   rank     Int      @unique @default(autoincrement())
@@ -230,7 +243,7 @@ model ServiceItemDetail {
 model Order {
   id       String @id @default(cuid())
   rank     Int    @unique @default(autoincrement())
-  groupId  Int    @default(1) // 組別
+  printId  Int    @default(1) // 組別
   year     Int
   price    Int
   note     String @default("")

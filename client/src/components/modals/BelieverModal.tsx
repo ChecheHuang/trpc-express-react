@@ -152,7 +152,7 @@ function BelieverModal() {
     {
       title: '生日',
       dataIndex: 'birthday',
-      width: '160px',
+      width: '130px',
       render: (_, props) => {
         if (props.key === editKey) {
           return (

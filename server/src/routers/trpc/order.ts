@@ -1,7 +1,11 @@
-import prismadb from '../../lib/prismadb'
-import { router, procedure, privateProcedure } from '../../lib/trpc'
-import { TRPCError } from '@trpc/server'
-import { z } from 'zod'
+import prismadb from '../../lib/prismadb';
+import { router, procedure, privateProcedure } from '../../lib/trpc';
+import { TRPCError } from '@trpc/server';
+import { Mutex, withTimeout } from 'async-mutex';
+import { z } from 'zod';
+
+
+const mutexWithTimeout = withTimeout(new Mutex(), 5000, new Error('請稍待再試'))
 
 export const order = router({
   createOrder: privateProcedure
@@ -14,14 +18,16 @@ export const order = router({
       )
     )
     .mutation(async ({ input, ctx }) => {
+      await mutexWithTimeout.runExclusive(async () => {})
+
       const userId = ctx.user?.id as string
-      const lastGroupId = await prismadb.order.findFirst({
-        select: { groupId: true },
+      const lastRecord = await prismadb.order.findFirst({
+        select: { printId: true },
         orderBy: {
           id: 'desc',
         },
       })
-      const groupId = lastGroupId?.groupId ? lastGroupId.groupId + 1 : 1
+      const printId = lastRecord?.printId ? lastRecord.printId + 1 : 1
       try {
         const totalOrder: {
           serviceItem: {
@@ -32,6 +38,7 @@ export const order = router({
           }
           price: number
           position: string
+          printId: number
         }[] = []
         await prismadb.$transaction(async (prismadb) => {
           for (const { believerId, serviceItemIds } of input) {
@@ -79,7 +86,7 @@ export const order = router({
                 data: {
                   userId,
                   believerId,
-                  groupId,
+                  printId,
                   serviceItemId: serviceItem.id,
                   price: serviceItem.price,
                   year: serviceItem.year,
@@ -88,6 +95,7 @@ export const order = router({
                 select: {
                   price: true,
                   position: true,
+                  printId:true,
                   serviceItem: {
                     select: {
                       name: true,
@@ -113,6 +121,7 @@ export const order = router({
                 name,
               },
               price,
+              printId,
             }
           ) => {
             const existingItem = acc.find((item) => item.category === category && item.name === name)
@@ -121,7 +130,7 @@ export const order = router({
               existingItem.count++
               existingItem.price += price
             } else {
-              acc.push({ category, name, count: 1, price })
+              acc.push({ category, name, printId, count: 1, price })
             }
 
             return acc
@@ -131,8 +140,10 @@ export const order = router({
             name: string
             count: number
             price: number
+            printId: number
           }[]
         )
+        console.log(orders)
         return orders
       } catch (error: any) {
         throw new TRPCError({

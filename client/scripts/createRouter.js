@@ -443,7 +443,7 @@ const createBackEndRouter = async (json) => {
   const output = JSON.stringify(routes, null, 2)
 
   try {
-    const outputPath = path.join(__dirname, '../../express/scripts/routes.json')
+    const outputPath = path.join(__dirname, '../../server/scripts/routes.json')
     fs.writeFileSync(outputPath, output)
   } catch (error) {
     console.error('增加失敗:', error.message)

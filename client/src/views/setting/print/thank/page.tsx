@@ -4,6 +4,8 @@ import { useReactToPrint } from 'react-to-print'
 
 import Container from '@/components/container/Container'
 import { convertToChineseNumber } from '@/lib/utils'
+import { trpcQuery } from '@/provider/TrpcProvider'
+import { useTemple } from '@/store/useTemple'
 import { useUserStore } from '@/store/useUser'
 import { TrpcOutputs } from '@/types/trpc'
 
@@ -12,6 +14,9 @@ const DomPage = () => {
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
   })
+
+  const { data } = trpcQuery.print.getPrints.useQuery()
+  console.log(data)
 
   return (
     <Container>
@@ -31,6 +36,7 @@ type Props = {
 
 export const ThankPrint = forwardRef<HTMLDivElement, Props>(
   (props, forwardRef) => {
+    const { temple } = useTemple()
     const orders = props.orders || [
       { category: '點燈', name: '平安', count: 3, price: 1500 },
     ]
@@ -64,7 +70,7 @@ export const ThankPrint = forwardRef<HTMLDivElement, Props>(
             新台幣{convertToChineseNumber(totalPrice)}元整
           </div>
           <div className="text-center text-lg font-bold">
-            虔誠之心神人感激特以此狀以表謝意
+            {temple.wordsOfThanksForService}
           </div>
           <table className="mb-4 w-full table-fixed text-center text-sm">
             <thead>
@@ -88,9 +94,9 @@ export const ThankPrint = forwardRef<HTMLDivElement, Props>(
           </table>
           <div className="flex  justify-between">
             <div>
-              <p className="text-lg">海光宮</p>
-              <p className="text-sm">電話 02 2812 7626</p>
-              <p className="text-sm"> 台北市士林區葫蘆街87號</p>
+              <p className="text-lg">{temple.name}</p>
+              <p className="text-sm">電話 {temple.phone}</p>
+              <p className="text-sm">{temple.address}</p>
             </div>
             <div className="text-right">
               <p className="text-sm font-bold">總計</p>

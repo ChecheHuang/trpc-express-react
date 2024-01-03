@@ -3,10 +3,12 @@ import { useEffect } from 'react'
 
 import { cn } from '@/lib/utils'
 import { trpcClient } from '@/provider/TrpcProvider'
+import { useTemple } from '@/store/useTemple'
 
 import Form from './_components/Form'
 
 const Login = () => {
+  const { temple } = useTemple()
   useEffect(() => {
     const connection = trpcClient.auth.onLogin.subscribe(undefined, {
       onData: (message) => {
@@ -33,7 +35,7 @@ const Login = () => {
             src="/images/loginImg.webp"
             alt=""
           />
-          <h1 className="py-1 pb-2 text-3xl text-white">海光宮後台管理系統</h1>
+          <h1 className="py-1 pb-2 text-3xl text-white">{`${temple.name}後台管理系統`}</h1>
           <Form />
         </div>
       </div>

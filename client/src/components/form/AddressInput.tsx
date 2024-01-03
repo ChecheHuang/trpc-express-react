@@ -1,9 +1,10 @@
-import { useUpdateEffect } from '@/hooks/useHook'
-import { cn } from '@/lib/utils'
-import { trpcQuery } from '@/provider/TrpcProvider'
 import { Cascader, Form, AutoComplete } from 'antd'
 import { FormInstance } from 'antd/lib'
 import { useMemo, useRef, useState } from 'react'
+
+import { useUpdateEffect } from '@/hooks/useHook'
+import { cn } from '@/lib/utils'
+import { trpcQuery } from '@/provider/TrpcProvider'
 
 type AddressInputProps = {
   className?: string
@@ -11,6 +12,7 @@ type AddressInputProps = {
   name?: string
   label?: string | boolean
   direction?: 'row' | 'col'
+  initialValue?: string
 }
 
 const AddressInput = ({
@@ -19,9 +21,10 @@ const AddressInput = ({
   label = '地址',
   className,
   direction = 'row',
+  initialValue,
 }: AddressInputProps) => {
-  const initValue = form.getFieldValue(name) || ''
-  const [city, district, address] = initValue.split(/(?<=市|縣|區|鎮)/)
+  const formValue = initialValue ? initialValue : form.getFieldValue(name) || ''
+  const [city, district, address] = formValue.split(/(?<=市|縣|區|鎮)/)
   const [addressDetail, setAddressDetail] = useState(address || '')
   const [cityAndArea, setCityAndArea] = useState<(string | number)[]>(
     city ? [city, district] : [],

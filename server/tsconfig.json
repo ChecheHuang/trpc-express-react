@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "types": ["server"],
+    "types": ["express"],
     "target": "es5",
     "module": "commonjs",
     "lib": ["es6"],

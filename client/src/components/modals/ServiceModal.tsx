@@ -29,7 +29,7 @@ type ServiceModalStoreType = {
 
 export const useServiceModalStore = create<ServiceModalStoreType>((set) => ({
   believer: undefined,
-  isOpen: true,
+  isOpen: false,
   onOpen: (info) => set({ isOpen: true, info }),
   onClose: () => set({ isOpen: false }),
 }))
@@ -123,6 +123,7 @@ function ServiceModal() {
     )
     const orders = await trpcClient.order.createOrder.mutate(submitData)
     refetch()
+    form.resetFields()
     printModal.setOrders(orders)
     printModal.onOpen()
   }
@@ -154,13 +155,13 @@ function ServiceModal() {
             />
           </Form.Item>
           <Form.Item label="總金額">
-            <div className="flex justify-center">{totalPrice}</div>
+            <div className="flex ">{totalPrice}</div>
           </Form.Item>
           <Form.Item label="戶長">
-            <div className="flex justify-center">{parent.name}</div>
+            <div className="flex ">{parent.name}</div>
           </Form.Item>
           <Form.Item label="經辦員">
-            <div className="flex justify-center">{name}</div>
+            <div className="flex ">{name}</div>
           </Form.Item>
           <div className="col-span-full">
             <Table

@@ -16,7 +16,7 @@ type PrintModalStoreType = {
 
 export const usePrintModalStore = create<PrintModalStoreType>((set) => ({
   isOpen: false,
-  orders: [],
+  orders: [] as TrpcOutputs['order']['createOrder'],
   setOrders: (orders) => set({ orders }),
   onOpen: () => set({ isOpen: true }),
   onClose: () => set({ isOpen: false }),
@@ -29,6 +29,7 @@ const PrintModal = () => {
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
   })
+  // console.log(orders)
 
   return (
     <Modal
