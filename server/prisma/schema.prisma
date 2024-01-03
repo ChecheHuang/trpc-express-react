@@ -1,0 +1,249 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// model TaiwanCity {
+//   id        String   @id @default(cuid())
+//   rank      Int      @unique @default(autoincrement())
+//   name      String   @unique
+//   areas     Json     @default("[]")
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
+
+model City {
+  id   String @id @default(cuid())
+  rank Int    @unique @default(autoincrement())
+  name String @unique
+
+  areas Area[]
+}
+
+model Area {
+  id   String @id @default(cuid())
+  rank Int    @unique @default(autoincrement())
+  name String
+
+  cityId String
+  city   City   @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  roads Road[]
+
+  @@unique([cityId, name])
+}
+
+model Road {
+  id   String @id @default(cuid())
+  rank Int    @unique @default(autoincrement())
+  name String
+
+  areaId String
+  area   Area   @relation(fields: [areaId], references: [id], onDelete: Cascade)
+
+  @@unique([areaId, name])
+}
+
+model Role {
+  id     String  @id @default(cuid())
+  role   String  @unique
+  status Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rolesOnUsers  RolesOnUsers[]
+  rolesOnRoutes RolesOnRoutes[]
+  rolesOnApis   RolesOnApis[]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  rank      Int      @unique @default(autoincrement())
+  name      String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rolesOnUsers    RolesOnUsers[]
+  createBelievers Believer[]
+  orders          Order[]
+}
+
+model Api {
+  id                 String  @id @default(cuid())
+  rank               Int     @unique @default(autoincrement())
+  router             String  @default("")
+  name               String  @default("")
+  swaggerMethod      String  @default("")
+  swaggerPath        String  @default("")
+  swaggerTags        Json    @default("[]")
+  swaggerSummary     String  @default("")
+  swaggerDescription String  @default("")
+  swaggerProtect     Boolean @default(false)
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  rolesOnApis RolesOnApis[]
+}
+
+model Route {
+  id       String  @id @default(cuid())
+  rank     Int     @unique @default(autoincrement())
+  name     String
+  path     String  @unique
+  parentId String?
+  parent   Route?  @relation("routeSelf", fields: [parentId], references: [id], onDelete: Cascade)
+  children Route[] @relation("routeSelf")
+
+  rolesOnRoutes RolesOnRoutes[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RolesOnUsers {
+  roleId String
+  userId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, userId])
+  @@index([roleId, userId])
+  @@map("Roles_On_Users")
+}
+
+model RolesOnRoutes {
+  roleId  String
+  routeId String
+  isAllow Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  role  Role  @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  route Route @relation(fields: [routeId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, routeId])
+  @@index([roleId, routeId])
+  @@map("Roles_On_Routes")
+}
+
+model RolesOnApis {
+  roleId  String
+  apiId   String
+  isAllow Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  api  Api  @relation(fields: [apiId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, apiId])
+  @@index([roleId, apiId])
+  @@map("Roles_On_Apis")
+}
+
+model Believer {
+  id       String   @id @default(cuid())
+  rank     Int      @unique @default(autoincrement())
+  familyId Int      @default(1)
+  name     String   @default("") // 姓名
+  gender   String   @default("") // 性别
+  birthday DateTime @default(now()) // 生日
+  phone    String   @default("") // 電話
+  address  String   @default("") // 地址
+
+  parentId String? // 戶長 id
+  parent   Believer?  @relation("BelieverSelf", fields: [parentId], references: [id], onDelete: Cascade) // 戶長
+  children Believer[] @relation("BelieverSelf") // 家屬
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdUserId String // 建立者 id
+  createdUser   User    @relation(fields: [createdUserId], references: [id]) // 建立者
+  isDelete      Boolean @default(false)
+
+  orders Order[]
+}
+
+model Service {
+  id       String @id @default(cuid())
+  rank     Int    @unique @default(autoincrement())
+  category String @unique // 類別
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  serviceItems ServiceItem[] // 服務項目
+}
+
+model ServiceItem {
+  id          String @id @default(cuid())
+  rank        Int    @unique @default(autoincrement())
+  year        Int /// 年度
+  name        String /// 名稱
+  price       Int /// 價格
+  description String @default("") /// 說明
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  serviceId String // 服務 id
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade) // 服務
+
+  serviceItemDetails ServiceItemDetail[] /// 服務項目明細
+  orders             Order[]
+}
+
+model ServiceItemDetail {
+  id      String @id @default(cuid())
+  rank    Int
+  name    String // 燈座名稱
+  start   Int    @default(1) // 開始位置
+  current Int    @default(0) // 目前位置
+  end     Int    @default(999) // 結束位置
+
+  serviceItemId String // 服務項目 id
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  serviceItem ServiceItem @relation(fields: [serviceItemId], references: [id], onDelete: Cascade) // 服務項目
+
+  @@unique([serviceItemId, rank])
+}
+
+model Order {
+  id       String @id @default(cuid())
+  rank     Int    @unique @default(autoincrement())
+  groupId  Int    @default(1) // 組別
+  year     Int
+  price    Int
+  note     String @default("")
+  position String @default("") // 燈座位置
+
+  status String @default("paid") // pending, paid, cancel
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  believerId String
+  believer   Believer @relation(fields: [believerId], references: [id], onDelete: Cascade)
+
+  serviceItemId String
+  serviceItem   ServiceItem @relation(fields: [serviceItemId], references: [id], onDelete: Cascade)
+}

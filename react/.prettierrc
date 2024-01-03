@@ -1,9 +1,0 @@
-{
-  "singleQuote": true,
-  "semi": false,
-  "endOfLine": "auto",
-  "plugins": [
-    "@trivago/prettier-plugin-sort-imports",
-    "prettier-plugin-tailwindcss"
-  ]
-}

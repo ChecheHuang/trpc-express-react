@@ -1,8 +1,8 @@
 *
-!express/
-!express/**
-!react/
-!react/**
+!server/
+!server/**
+!client/
+!client/**
 !.vscode/
 !.vscode/**
 !.husky

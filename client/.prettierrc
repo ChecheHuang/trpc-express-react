@@ -1,0 +1,16 @@
+{
+  "singleQuote": true,
+  "semi": false,
+  "endOfLine": "auto",
+  "plugins": [
+    "prettier-plugin-tailwindcss",
+    "@trivago/prettier-plugin-sort-imports"
+  ],
+  "importOrder": [
+    "^@[a-zA-Z]+/(.*)$",
+    "^@.*",
+    "^[./]",
+    "^\\..*"
+  ],
+  "importOrderSeparation": true
+}

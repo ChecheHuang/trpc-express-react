@@ -2,18 +2,18 @@
   "name": "trpc-react-express",
   "version": "1.0.0",
   "workspaces": [
-    "react",
-    "express"
+    "client",
+    "server"
   ],
   "scripts": {
-    "build:client": "npm run build -w react",
-    "build:server": "npm run build -w express",
+    "build:client": "npm run build -w client",
+    "build:server": "npm run build -w server",
     "build": "run-s build:server build:client",
-    "dev:server": "npm run dev -w express",
-    "dev:client": "npm run dev -w react",
+    "dev:server": "npm run dev -w server",
+    "dev:client": "npm run dev -w client",
     "dev": "run-p dev:*",
     "prepare": "husky install",
-    "start": "npm run start -w express",
+    "start": "npm run start -w server",
     "cma": "git add . && git-cz"
   },
   "devDependencies": {
