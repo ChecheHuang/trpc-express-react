@@ -1,33 +1,43 @@
+import { Button, Form, Input, Modal } from 'antd'
+
+import FormTemplate from '@/components/form/FormTemplate'
 import NumberInput from '@/components/form/NumberInput'
 import { useAntd } from '@/provider/AntdProvider'
 import { trpcQuery } from '@/provider/TrpcProvider'
 import { TrpcInputs } from '@/types/trpc'
-import { Button, Form, Input, Modal } from 'antd'
 
-const CreateLightModal = ({
+const CreateDetailModal = ({
+  id: id,
   open,
   onClose,
 }: {
+  id: string
   open: boolean
   onClose: () => void
 }) => {
   const { message } = useAntd()
   const utils = trpcQuery.useUtils()
-  const { mutate: createLight, isLoading: isCreateLight } =
-    trpcQuery.service.createLight.useMutation({
+  const { mutate: createLightDetail, isLoading: isCreateLight } =
+    trpcQuery.service.light.createDetail.useMutation({
       onSuccess: () => {
         message.success('新增成功')
-        utils.service.getLights.invalidate()
+        utils.service.light.getAll.invalidate()
         addForm.resetFields()
         onClose()
       },
     })
-  const [addForm] = Form.useForm<TrpcInputs['service']['createLight']>()
+  const [addForm] =
+    Form.useForm<TrpcInputs['service']['light']['createDetail']>()
 
   const handleAdd = async () => {
     try {
       const values = await addForm.validateFields()
-      createLight(values)
+      const { start, end } = values
+      if (start > end) {
+        message.error('開始不可大於結束')
+        return
+      }
+      createLightDetail(values)
     } catch (error: any) {
       const firstName = error?.errorFields[0]?.name
       addForm.scrollToField(firstName)
@@ -60,24 +70,36 @@ const CreateLightModal = ({
       ]}
       width={400}
     >
-      <Form form={addForm}>
+      <FormTemplate form={addForm}>
+        <Form.Item initialValue={id} className="hidden" name="serviceItemId">
+          <Input />
+        </Form.Item>
         <Form.Item
           name="name"
-          label="燈別"
-          rules={[{ required: true, message: '請輸入燈別' }]}
+          label="燈座名稱"
+          rules={[{ required: true, message: '請輸入燈座名稱' }]}
         >
           <Input />
         </Form.Item>
         <Form.Item
-          name="price"
-          label="價格"
-          rules={[{ required: true, message: '請輸入價格' }]}
+          name="start"
+          label="開始"
+          initialValue={1}
+          rules={[{ required: true, message: '請輸入開始' }]}
         >
-          <NumberInput name="price" form={addForm} />
+          <NumberInput name="start" form={addForm} />
         </Form.Item>
-      </Form>
+        <Form.Item
+          name="end"
+          label="結束"
+          initialValue={999}
+          rules={[{ required: true, message: '請輸入結束' }]}
+        >
+          <NumberInput name="end" form={addForm} />
+        </Form.Item>
+      </FormTemplate>
     </Modal>
   )
 }
 
-export default CreateLightModal
+export default CreateDetailModal

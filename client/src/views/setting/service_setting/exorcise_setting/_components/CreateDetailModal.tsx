@@ -1,31 +1,33 @@
+import { Button, Form, Input, Modal } from 'antd'
+
 import FormTemplate from '@/components/form/FormTemplate'
 import NumberInput from '@/components/form/NumberInput'
 import { useAntd } from '@/provider/AntdProvider'
 import { trpcQuery } from '@/provider/TrpcProvider'
 import { TrpcInputs } from '@/types/trpc'
-import { Button, Form, Input, Modal } from 'antd'
 
-const CreateLightDetailModal = ({
-  lightId,
+const CreateDetailModal = ({
+  id: id,
   open,
   onClose,
 }: {
-  lightId: string
+  id: string
   open: boolean
   onClose: () => void
 }) => {
   const { message } = useAntd()
   const utils = trpcQuery.useUtils()
   const { mutate: createLightDetail, isLoading: isCreateLight } =
-    trpcQuery.service.createLightDetail.useMutation({
+    trpcQuery.service.light.createDetail.useMutation({
       onSuccess: () => {
         message.success('新增成功')
-        utils.service.getLights.invalidate()
+        utils.service.light.getAll.invalidate()
         addForm.resetFields()
         onClose()
       },
     })
-  const [addForm] = Form.useForm<TrpcInputs['service']['createLightDetail']>()
+  const [addForm] =
+    Form.useForm<TrpcInputs['service']['light']['createDetail']>()
 
   const handleAdd = async () => {
     try {
@@ -69,11 +71,7 @@ const CreateLightDetailModal = ({
       width={400}
     >
       <FormTemplate form={addForm}>
-        <Form.Item
-          initialValue={lightId}
-          className="hidden"
-          name="serviceItemId"
-        >
+        <Form.Item initialValue={id} className="hidden" name="serviceItemId">
           <Input />
         </Form.Item>
         <Form.Item
@@ -104,4 +102,4 @@ const CreateLightDetailModal = ({
   )
 }
 
-export default CreateLightDetailModal
+export default CreateDetailModal

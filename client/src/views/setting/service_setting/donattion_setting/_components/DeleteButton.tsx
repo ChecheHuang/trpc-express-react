@@ -1,14 +1,14 @@
-import ExtendedButton from '@/components/buttons/ExtendedButton';
+import ExtendedButton from '@/components/buttons/ExtendedButton'
 import { useAntd } from '@/provider/AntdProvider'
 import { trpcQuery } from '@/provider/TrpcProvider'
-import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { ExclamationCircleOutlined } from '@ant-design/icons'
 
-const DeleteLightButton = ({ id, name }: { id: string; name: string }) => {
+const DeleteButton = ({ id, name }: { id: string; name: string }) => {
   const utils = trpcQuery.useUtils()
   const { message, modal } = useAntd()
-  const { mutate: deleteLight } = trpcQuery.service.deleteLight.useMutation({
+  const { mutate: deleteService } = trpcQuery.service.light.delete.useMutation({
     onSuccess: () => {
-      utils.service.getLights.invalidate()
+      utils.service.light.getAll.invalidate()
       message.success('刪除成功')
     },
   })
@@ -22,7 +22,7 @@ const DeleteLightButton = ({ id, name }: { id: string; name: string }) => {
           okText: '確認',
           cancelText: '取消',
           onOk: () => {
-            deleteLight(id)
+            deleteService(id)
           },
         })
       }}
@@ -34,4 +34,4 @@ const DeleteLightButton = ({ id, name }: { id: string; name: string }) => {
   )
 }
 
-export default DeleteLightButton
+export default DeleteButton
