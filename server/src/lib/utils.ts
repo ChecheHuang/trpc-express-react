@@ -2,66 +2,10 @@ import { logserver } from './plugin'
 import { Handler, Request, Response, NextFunction } from 'express'
 import os from 'os'
 
-type InputType = {
-  id: number
-  name: string
-  path: string
-  parentId: number | null
-}
-type OutputType = InputType & {
-  children: OutputType[]
-}
-export function addChildrenToData(data: InputType[]): OutputType[] {
-  const result: OutputType[] = []
-
-  const nodeMap: { [id: number]: OutputType } = {}
-  data.forEach((item) => {
-    nodeMap[item.id] = { ...item, children: [] }
-  })
-
-  data.forEach((item) => {
-    const parentId = item.parentId
-    if (parentId === null) {
-      result.push(nodeMap[item.id])
-    } else if (Object.prototype.hasOwnProperty.call(nodeMap, parentId)) {
-      if (nodeMap[parentId].children) {
-        nodeMap[parentId].children.push(nodeMap[item.id])
-      }
-    }
-  })
-
-  return result
+export const isDefined = <T>(value?: T): value is T => {
+  return value !== null && value !== undefined
 }
 
-export interface CleanRouteType {
-  path: string
-  name: string
-  children?: CleanRouteType[]
-}
-type SeedRouteType = Omit<CleanRouteType, 'children'> & {
-  children?: { create: SeedRouteType[] }
-  rolesOnRoutes?: {
-    create: { roleId: string }[]
-  }
-}
-export function makeSeedRoute(routes: CleanRouteType[]): SeedRouteType[] {
-  return routes.map((route) => {
-    const { path, name, children } = route
-
-    const filteredRoute: SeedRouteType = {
-      path,
-      name,
-    }
-
-    if (children) {
-      filteredRoute.children = {
-        create: makeSeedRoute(children),
-      }
-    }
-
-    return filteredRoute
-  })
-}
 export function getLocalIP(): string {
   const interfaces = os.networkInterfaces()
   for (const devName in interfaces) {
