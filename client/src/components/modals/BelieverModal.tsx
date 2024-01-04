@@ -378,7 +378,9 @@ function BelieverModal() {
               selectedRowKeys: [parent?.id || ('' as React.Key)],
               onChange: async (selectedRowKeys: React.Key[]) => {
                 const id = selectedRowKeys[0] as string
-                await trpcClient.believer.changeParentIdByBelieverId.mutate(id)
+                await trpcClient.believer.changeParentIdByBelieverIdInSameFamily.mutate(
+                  id,
+                )
                 utils.believer.invalidate()
                 message.success('更新成功')
               },

@@ -1,12 +1,9 @@
-import { Button, Checkbox, Form, Input, Modal, Select, Spin, Tabs } from 'antd'
-import type { TabsProps } from 'antd'
+import { Button, Checkbox, Form, Modal, Select } from 'antd'
 import { ColumnsType } from 'antd/es/table'
-import { FormInstance, Table } from 'antd/lib'
-import { useMemo, useRef, useState } from 'react'
+import { Table } from 'antd/lib'
+import { useState } from 'react'
 import { create } from 'zustand'
 
-import Loading from '@/components/Loading'
-import { useWindowInfo } from '@/hooks/useHook'
 import { useAntd } from '@/provider/AntdProvider'
 import { trpcClient, trpcQuery } from '@/provider/TrpcProvider'
 import { useUserStore } from '@/store/useUser'
@@ -36,18 +33,34 @@ export const useServiceModalStore = create<ServiceModalStoreType>((set) => ({
 
 type DataType = GetArrType<TrpcOutputs['service']['getServices']['list']>
 
+const currentYear = new Date().getFullYear() - 1911
+
 function ServiceModal() {
-  const [serviceYear, setServiceYear] = useState(
-    new Date().getFullYear() - 1911,
-  )
+  const [serviceYear, setServiceYear] = useState(currentYear)
   const { isOpen, onClose, info } = useServiceModalStore()
 
   const printModal = usePrintModalStore()
 
   const believer = info?.believer
   const serviceCategory = info?.serviceCategory
-  const { message, modal } = useAntd()
+
+  const { message } = useAntd()
   const { name } = useUserStore()
+
+  const utils = trpcQuery.useUtils()
+  const { data, isLoading, refetch } = trpcQuery.service.getServices.useQuery(
+    {
+      year: serviceYear,
+      believerId: believer?.id as string,
+      serviceId: serviceCategory?.id as string,
+    },
+    {
+      enabled: !!info,
+    },
+  )
+
+  const list = data?.list || []
+  const parent = data?.parent || { name: '', familyId: 0 }
   const [form] = Form.useForm<
     Record<
       string,
@@ -66,20 +79,6 @@ function ServiceModal() {
     { form },
   )
 
-  const { data, isLoading, refetch } = trpcQuery.service.getServices.useQuery(
-    {
-      year: serviceYear,
-      believerId: believer?.id as string,
-      serviceId: serviceCategory?.id as string,
-    },
-    {
-      enabled: !!info,
-    },
-  )
-
-  const list = data?.list || []
-  const parent = data?.parent || { name: '', familyId: 0 }
-
   const columns: ColumnsType<DataType> = [
     {
       title: '姓名',
@@ -95,9 +94,10 @@ function ServiceModal() {
             <Form.Item initialValue={[]} name={id} className="mb-0">
               <Checkbox.Group>
                 {serviceItems.map((item) => {
+                  if (item.isOrder) return <div>💡{item.name}</div>
                   return (
                     <Checkbox
-                      disabled={item.isOrder}
+                      disabled={serviceYear !== currentYear}
                       value={item}
                       key={item.id}
                     >
@@ -123,7 +123,9 @@ function ServiceModal() {
     )
     const orders = await trpcClient.order.createOrder.mutate(submitData)
     refetch()
+    utils.believer.getBelieverDetailsById.invalidate()
     form.resetFields()
+    message.success('成功新增服務項目')
     printModal.setOrders(orders)
     printModal.onOpen()
   }
@@ -147,19 +149,28 @@ function ServiceModal() {
           <Form.Item label="年度">
             <Select
               value={serviceYear}
-              options={[
-                { label: '112', value: 112 },
-                { label: '113', value: 113 },
-              ]}
+              options={Array(3)
+                .fill(currentYear)
+                .map((value, index) => ({
+                  value: value - index,
+                  label: `${value - index}年度`,
+                }))}
               onChange={(value) => setServiceYear(value)}
             />
           </Form.Item>
           <Form.Item label="總金額">
             <div className="flex ">{totalPrice}</div>
           </Form.Item>
-          <Form.Item label="戶長">
-            <div className="flex ">{parent.name}</div>
-          </Form.Item>
+          <div className="flex ">
+            <Form.Item className="w-1/2" label="目前信眾">
+              {believer?.name}
+            </Form.Item>
+
+            <Form.Item label="戶長">
+              <div className="flex ">{parent.name}</div>
+            </Form.Item>
+          </div>
+
           <Form.Item label="經辦員">
             <div className="flex ">{name}</div>
           </Form.Item>

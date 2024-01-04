@@ -1,6 +1,8 @@
 import { Image as AntdImage } from 'antd'
+
 import lazyImg from '@/assets/images/lazy.png'
 import placeholderImg from '@/assets/images/placeholder.jpg'
+
 interface ImageProps {
   width?: number
   src: string

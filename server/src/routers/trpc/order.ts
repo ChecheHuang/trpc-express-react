@@ -1,9 +1,8 @@
-import prismadb from '../../lib/prismadb';
-import { router, procedure, privateProcedure } from '../../lib/trpc';
-import { TRPCError } from '@trpc/server';
-import { Mutex, withTimeout } from 'async-mutex';
-import { z } from 'zod';
-
+import prismadb from '../../lib/prismadb'
+import { router, procedure, privateProcedure } from '../../lib/trpc'
+import { TRPCError } from '@trpc/server'
+import { Mutex, withTimeout } from 'async-mutex'
+import { z } from 'zod'
 
 const mutexWithTimeout = withTimeout(new Mutex(), 5000, new Error('請稍待再試'))
 
@@ -95,7 +94,7 @@ export const order = router({
                 select: {
                   price: true,
                   position: true,
-                  printId:true,
+                  printId: true,
                   serviceItem: {
                     select: {
                       name: true,
@@ -143,7 +142,7 @@ export const order = router({
             printId: number
           }[]
         )
-        console.log(orders)
+        // console.log(orders)
         return orders
       } catch (error: any) {
         throw new TRPCError({

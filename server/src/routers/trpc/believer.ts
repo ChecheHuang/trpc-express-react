@@ -76,88 +76,6 @@ export const believer = router({
       })
       return data
     }),
-
-  changeParentIdByBelieverId: procedure.input(z.string()).mutation(async ({ input }) => {
-    const data = await prismadb.believer.findUnique({
-      where: {
-        id: input,
-      },
-      select: {
-        id: true,
-        name: true,
-        parent: {
-          select: {
-            id: true,
-            children: {
-              select: {
-                id: true,
-              },
-              where: {
-                id: {
-                  not: input,
-                },
-              },
-            },
-          },
-        },
-      },
-    })
-    if (!data) throw new TRPCError({ code: 'BAD_REQUEST', message: '找不到會員' })
-
-    if (data.parent === null) {
-      return
-    }
-
-    const newParent = await prismadb.believer.update({
-      where: {
-        id: input,
-      },
-      data: {
-        parentId: null,
-      },
-      select: {
-        id: true,
-      },
-    })
-    const familyIds = [...data.parent.children.map((item) => item.id), data.parent.id]
-    for (const id of familyIds) {
-      await prismadb.believer.update({
-        where: {
-          id,
-        },
-        data: {
-          parentId: newParent.id,
-        },
-      })
-    }
-  }),
-
-  createBeliever: privateProcedure
-    .input(
-      z.object({
-        parentId: z.string().nullable(),
-        name: z.string(),
-        gender: z.string(),
-        birthday: z.string(),
-        phone: z.string(),
-        address: z.string(),
-      })
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { birthday, ...data } = input
-      const newBeliever = await prismadb.believer.create({
-        data: {
-          ...data,
-          birthday: new Date(birthday),
-          createdUserId: ctx.user.id,
-        },
-        select: {
-          id: true,
-          name: true,
-        },
-      })
-      return newBeliever
-    }),
   getBelievers: paginationProcedure
     .input(
       z.object({
@@ -282,7 +200,145 @@ export const believer = router({
     const data = await getBelieverListById(input)
     return data
   }),
+  getBelieverDetailsById: privateProcedure.input(z.string()).query(async ({ input }) => {
+    const queryBeliever = await prismadb.believer.findUnique({
+      where: {
+        id: input,
+        isDelete: false,
+      },
+      select: {
+        id: true,
+        name: true,
+        gender: true,
+        birthday: true,
+        phone: true,
+        address: true,
+        parent: {
+          select: {
+            id: true,
+            name: true,
+            children: {
+              select: {
+                id: true,
+                name: true,
+              },
+              where: {
+                id: {
+                  not: input,
+                },
+                isDelete: false,
+              },
+            },
+          },
+        },
+        children: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        orders: {
+          select: {
+            rank: true,
+            printId: true,
+            year: true,
+            price: true,
+            note: true,
+            position: true,
+            status: true,
+            createdAt: true,
+            serviceItem: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    if (queryBeliever === null) {
+      throw new TRPCError({ code: 'BAD_REQUEST', message: '找不到信眾' })
+    }
+    const { parent, children, orders: queryOrders, ...rest } = queryBeliever
+    const family = ((): {
+      id: string
+      name: string
+    }[] => {
+      if (!parent) return children
+      const { children: otherFamilyMembers, ...parentInfo } = parent
+      return [parentInfo, ...otherFamilyMembers]
+    })()
+
+    type OrderType = {
+      year: string
+      orders: {
+        rank: number
+        printId: number
+        price: number
+        note: string
+        position: string
+        status: string
+        serviceName: string
+        createdAt: string
+      }[]
+    }
+    const totalOrdersObj: { [year: string]: OrderType } = queryOrders.reduce(
+      (acc: { [year: string]: OrderType }, { serviceItem: { name: serviceName }, year, createdAt, ...cur }) => {
+        const yearStr = year.toString()
+        const order = {
+          serviceName,
+          createdAt: new Date(createdAt).toISOString().split('T')[0],
+          ...cur,
+        }
+
+        if (!acc[yearStr]) {
+          acc[yearStr] = {
+            year: yearStr,
+            orders: [order],
+          }
+          return acc
+        }
+        acc[yearStr].orders.push(order)
+        return acc
+      },
+      {}
+    )
+    const totalOrders = Object.values(totalOrdersObj)
+    const result = { ...rest, family, totalOrders }
+    return result
+  }),
+
+  createBeliever: privateProcedure
+    .input(
+      z.object({
+        parentId: z.string().nullable(),
+        name: z.string(),
+        gender: z.string(),
+        birthday: z.string(),
+        phone: z.string(),
+        address: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { birthday, ...data } = input
+      const newBeliever = await prismadb.believer.create({
+        data: {
+          ...data,
+          birthday: new Date(birthday),
+          createdUserId: ctx.user.id,
+        },
+        select: {
+          id: true,
+          name: true,
+        },
+      })
+      return newBeliever
+    }),
   updateBeliever: privateProcedure
+    .meta({
+      openapi: { method: 'PUT', summary: '更新信眾', description: '更新信眾', tags: ['believer'], path: '/believer/{id}' },
+    })
     .input(
       z.object({
         id: z.string(),
@@ -293,8 +349,10 @@ export const believer = router({
         address: z.string(),
       })
     )
+    .output(z.void())
     .mutation(async ({ input }) => {
       const { id, birthday, ...data } = input
+
       await prismadb.believer.update({
         where: {
           id,
@@ -305,6 +363,60 @@ export const believer = router({
         },
       })
     }),
+  changeParentIdByBelieverIdInSameFamily: procedure.input(z.string()).mutation(async ({ input }) => {
+    const data = await prismadb.believer.findUnique({
+      where: {
+        id: input,
+      },
+      select: {
+        id: true,
+        name: true,
+        parent: {
+          select: {
+            id: true,
+            children: {
+              select: {
+                id: true,
+              },
+              where: {
+                id: {
+                  not: input,
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+    if (!data) throw new TRPCError({ code: 'BAD_REQUEST', message: '找不到會員' })
+
+    if (data.parent === null) {
+      return
+    }
+
+    const newParent = await prismadb.believer.update({
+      where: {
+        id: input,
+      },
+      data: {
+        parentId: null,
+      },
+      select: {
+        id: true,
+      },
+    })
+    const familyIds = [...data.parent.children.map((item) => item.id), data.parent.id]
+    for (const id of familyIds) {
+      await prismadb.believer.update({
+        where: {
+          id,
+        },
+        data: {
+          parentId: newParent.id,
+        },
+      })
+    }
+  }),
   changeBelieverParent: privateProcedure
     .input(z.object({ id: z.string(), currentBelieverId: z.string().optional() }))
     .mutation(async ({ input }) => {

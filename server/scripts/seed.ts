@@ -1,9 +1,10 @@
 import { logserver } from '../src/lib/plugin'
 import { trpcRouter } from '../src/routers/trpc'
+import { service } from '../src/routers/trpc/service'
 import believers from './believers.json'
 import citys from './citys.json'
 import routes from './routes.json'
-import services from './services.json'
+import { createServices } from './services'
 import { PrismaClient, Prisma } from '@prisma/client'
 import bcrypt from 'bcrypt'
 import chalk from 'chalk'
@@ -194,7 +195,11 @@ const init = async () => {
 
   //todo 創建服務
   const serviceSeed = await (async () => {
-    for (const data of services) {
+    const yearArr = Array(3)
+      .fill(new Date().getFullYear() - 1911)
+      .map((year, index) => year - index)
+
+    for (const data of createServices(yearArr)) {
       await prismadb.service.create({
         data,
       })

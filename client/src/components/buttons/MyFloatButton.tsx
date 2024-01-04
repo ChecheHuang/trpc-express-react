@@ -1,8 +1,10 @@
-import { useSearchBelieverModalStore } from '../modals/SearchBelieverModal'
-import { useWindowInfo } from '@/hooks/useHook'
-import { CommentOutlined, CustomerServiceOutlined } from '@ant-design/icons'
 import { FloatButton } from 'antd'
 import { motion } from 'framer-motion'
+
+import { useWindowInfo } from '@/hooks/useHook'
+import { CommentOutlined, AuditOutlined } from '@ant-design/icons'
+
+import { useSearchBelieverModalStore } from '../modals/SearchBelieverModal'
 
 const MyFloatButton = () => {
   const { windowWidth, windowHeight } = useWindowInfo()
@@ -25,7 +27,7 @@ const MyFloatButton = () => {
           shape="circle"
           trigger="hover"
           type="primary"
-          icon={<CustomerServiceOutlined />}
+          icon={<AuditOutlined />}
         >
           <FloatButton
             tooltip="信眾資料"

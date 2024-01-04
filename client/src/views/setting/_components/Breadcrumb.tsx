@@ -1,8 +1,9 @@
-import { useRouter } from '@/hooks/useRouter'
-import { HomeOutlined } from '@ant-design/icons'
 import { Breadcrumb as AntdBreadcrumb } from 'antd'
 import React, { memo } from 'react'
 import { Link } from 'react-router-dom'
+
+import { useRouter } from '@/hooks/useRouter'
+import { HomeOutlined } from '@ant-design/icons'
 
 const Breadcrumb: React.FC = () => {
   const { extraBreadcrumb } = useRouter()
