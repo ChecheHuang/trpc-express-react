@@ -6,9 +6,9 @@ import { ExclamationCircleOutlined } from '@ant-design/icons'
 const DeleteButton = ({ id, name }: { id: string; name: string }) => {
   const utils = trpcQuery.useUtils()
   const { message, modal } = useAntd()
-  const { mutate: deleteService } = trpcQuery.service.light.delete.useMutation({
+  const { mutate: deleteService } = trpcQuery.service.delete.useMutation({
     onSuccess: () => {
-      utils.service.light.getAll.invalidate()
+      utils.service.getServiceByCategory.invalidate()
       message.success('刪除成功')
     },
   })

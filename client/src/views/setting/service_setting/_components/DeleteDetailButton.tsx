@@ -3,12 +3,12 @@ import { useAntd } from '@/provider/AntdProvider'
 import { trpcQuery } from '@/provider/TrpcProvider'
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 
-const DeleteButton = ({ id, name }: { id: string; name: string }) => {
+const DeleteDetailButton = ({ id, name }: { id: string; name: string }) => {
   const utils = trpcQuery.useUtils()
   const { message, modal } = useAntd()
-  const { mutate: deleteService } = trpcQuery.service.light.delete.useMutation({
+  const { mutate: deleteDetail } = trpcQuery.service.deleteDetail.useMutation({
     onSuccess: () => {
-      utils.service.light.getAll.invalidate()
+      utils.service.getServiceByCategory.invalidate()
       message.success('刪除成功')
     },
   })
@@ -22,7 +22,7 @@ const DeleteButton = ({ id, name }: { id: string; name: string }) => {
           okText: '確認',
           cancelText: '取消',
           onOk: () => {
-            deleteService(id)
+            deleteDetail(id)
           },
         })
       }}
@@ -34,4 +34,4 @@ const DeleteButton = ({ id, name }: { id: string; name: string }) => {
   )
 }
 
-export default DeleteButton
+export default DeleteDetailButton

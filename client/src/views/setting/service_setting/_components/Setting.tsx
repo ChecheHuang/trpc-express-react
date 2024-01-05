@@ -1,4 +1,4 @@
-import { Form, Input, Table } from 'antd'
+import { Button, Form, Input, Modal, Table } from 'antd'
 import { ColumnsType } from 'antd/es/table'
 import { useMemo, useState } from 'react'
 
@@ -13,20 +13,35 @@ import { useAntd } from '@/provider/AntdProvider'
 import { trpcQuery } from '@/provider/TrpcProvider'
 import { TrpcInputs, TrpcOutputs } from '@/types/trpc'
 
-import CreateDetailModal from './_components/CreateDetailModal'
-import CreateModal from './_components/CreateModal'
-import DeleteButton from './_components/DeleteButton'
-import DeleteDetailButton from './_components/DeleteDetailButton'
+import CreateDetailModal from './CreateDetailModal'
+import DeleteButton from './DeleteButton'
+import DeleteDetailButton from './DeleteDetailButton'
 
-type DataType = GetArrType<TrpcOutputs['service']['light']['getAll']>
+type DataType = GetArrType<TrpcOutputs['service']['getServiceByCategory']>
 
-const SettingPage = () => {
-  const [form] = Form.useForm<TrpcInputs['service']['light']['update']>()
+type SettingProps = {
+  categoryName: string
+  title: string
+}
+
+type CreateModalFormType = Omit<
+  TrpcInputs['service']['createByCategory'],
+  'category'
+>
+
+type CreateDetailModalProps = {
+  open: boolean
+  onClose: () => void
+} & SettingProps
+
+const Setting = ({ categoryName, title }: SettingProps) => {
+  const [form] = Form.useForm<TrpcInputs['service']['update']>()
   const [editKey, setEditKey] = useState<string | null>(null)
   const [showKey, setShowKey] = useState<string>('')
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const { data, isLoading, refetch } = trpcQuery.service.light.getAll.useQuery()
-  const { mutate: update } = trpcQuery.service.light.update.useMutation({
+  const { data, isLoading, refetch } =
+    trpcQuery.service.getServiceByCategory.useQuery(categoryName)
+  const { mutate: update } = trpcQuery.service.update.useMutation({
     onSuccess: () => {
       refetch()
       form.resetFields()
@@ -51,14 +66,14 @@ const SettingPage = () => {
   const columns: ColumnsType<DataType> = [
     {
       title: '名稱',
-      width: '30%',
+      width: '35%',
       dataIndex: 'name',
       render: (_, props) => {
         if (props.id === editKey) {
           return (
             <Form.Item
               name="name"
-              rules={[{ required: true, message: '請輸入燈別' }]}
+              rules={[{ required: true, message: `請輸入${title}` }]}
             >
               <Input autoFocus />
             </Form.Item>
@@ -70,12 +85,12 @@ const SettingPage = () => {
     {
       title: '目前燈號',
       dataIndex: 'current',
-      width: '30%',
+      width: '28%',
     },
     {
       title: '價格',
       dataIndex: 'price',
-      width: '25%',
+      width: '22%',
       render: (_, props) => {
         if (props.id === editKey) {
           return (
@@ -154,6 +169,8 @@ const SettingPage = () => {
   return (
     <>
       <CreateModal
+        categoryName={categoryName}
+        title={title}
         open={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
       />
@@ -163,7 +180,7 @@ const SettingPage = () => {
             {/* Left */}
             <div>
               <div className="mb-2  flex justify-around">
-                <h1>燈別名稱</h1>
+                <h1>{title}名稱</h1>
                 <ExtendedButton
                   onClick={() => {
                     setIsCreateModalOpen(true)
@@ -194,8 +211,7 @@ const SettingPage = () => {
                 />
               </Form>
             </div>
-            {/* Right */}
-            <Right id={showKey} data={detailsData} />
+            <SettingDetail id={showKey} data={detailsData} />
           </div>
         </MyCard>
       </Container>
@@ -203,29 +219,26 @@ const SettingPage = () => {
   )
 }
 
-export default SettingPage
+export default Setting
 
-const Right = ({
-  id,
-  data: detailsData,
-}: {
+type SettingDetailProps = {
   id: string
   data: DataType['details']
-}) => {
+}
+const SettingDetail = ({ id, data: detailsData }: SettingDetailProps) => {
   const [editKey, setEditKey] = useState<string | null>(null)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [form] = Form.useForm<TrpcInputs['service']['light']['updateDetail']>()
+  const [form] = Form.useForm<TrpcInputs['service']['updateDetail']>()
   const { message } = useAntd()
   const { windowHeight } = useWindowInfo()
   const utils = trpcQuery.useUtils()
-  const { mutate: updateDetail } =
-    trpcQuery.service.light.updateDetail.useMutation({
-      onSuccess: () => {
-        message.success('修改成功')
-        utils.service.light.getAll.invalidate()
-        setEditKey('')
-      },
-    })
+  const { mutate: updateDetail } = trpcQuery.service.updateDetail.useMutation({
+    onSuccess: () => {
+      message.success('修改成功')
+      utils.service.getServiceByCategory.invalidate()
+      setEditKey('')
+    },
+  })
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields()
@@ -383,5 +396,80 @@ const Right = ({
         </Form>
       </div>
     </>
+  )
+}
+
+const CreateModal = ({
+  categoryName,
+  open,
+  onClose,
+  title,
+}: CreateDetailModalProps) => {
+  const { message } = useAntd()
+  const utils = trpcQuery.useUtils()
+  const { mutate: create, isLoading: isCreating } =
+    trpcQuery.service.createByCategory.useMutation({
+      onSuccess: () => {
+        message.success('新增成功')
+        utils.service.getServiceByCategory.invalidate()
+        addForm.resetFields()
+        onClose()
+      },
+    })
+  const [addForm] = Form.useForm<CreateModalFormType>()
+
+  const handleAdd = async () => {
+    try {
+      const values = await addForm.validateFields()
+      create({ category: categoryName, ...values })
+    } catch (error: any) {
+      const firstName = error?.errorFields[0]?.name
+      addForm.scrollToField(firstName)
+      const fieldInput = document.getElementById(`${firstName}`)
+      fieldInput && fieldInput.focus()
+    }
+  }
+  const handleCancel = () => {
+    addForm.resetFields()
+    onClose()
+  }
+
+  return (
+    <Modal
+      title={`新增${title}`}
+      open={open}
+      onCancel={handleCancel}
+      footer={[
+        <Button key="cancel" onClick={() => onClose()}>
+          取消
+        </Button>,
+        <Button
+          disabled={isCreating}
+          key="ok"
+          type="primary"
+          onClick={handleAdd}
+        >
+          確定
+        </Button>,
+      ]}
+      width={400}
+    >
+      <Form form={addForm}>
+        <Form.Item
+          name="name"
+          label={title}
+          rules={[{ required: true, message: `請輸入${title}` }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          name="price"
+          label="價格"
+          rules={[{ required: true, message: '請輸入價格' }]}
+        >
+          <NumberInput name="price" form={addForm} />
+        </Form.Item>
+      </Form>
+    </Modal>
   )
 }

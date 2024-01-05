@@ -6,6 +6,8 @@ import { useAntd } from '@/provider/AntdProvider'
 import { trpcQuery } from '@/provider/TrpcProvider'
 import { TrpcInputs } from '@/types/trpc'
 
+type FormType = TrpcInputs['service']['createDetail']
+
 const CreateDetailModal = ({
   id: id,
   open,
@@ -17,17 +19,16 @@ const CreateDetailModal = ({
 }) => {
   const { message } = useAntd()
   const utils = trpcQuery.useUtils()
-  const { mutate: createLightDetail, isLoading: isCreateLight } =
-    trpcQuery.service.light.createDetail.useMutation({
+  const { mutate: createDetail, isLoading: isCreating } =
+    trpcQuery.service.createDetail.useMutation({
       onSuccess: () => {
         message.success('新增成功')
-        utils.service.light.getAll.invalidate()
+        utils.service.getServiceByCategory.invalidate()
         addForm.resetFields()
         onClose()
       },
     })
-  const [addForm] =
-    Form.useForm<TrpcInputs['service']['light']['createDetail']>()
+  const [addForm] = Form.useForm<FormType>()
 
   const handleAdd = async () => {
     try {
@@ -37,7 +38,7 @@ const CreateDetailModal = ({
         message.error('開始不可大於結束')
         return
       }
-      createLightDetail(values)
+      createDetail(values)
     } catch (error: any) {
       const firstName = error?.errorFields[0]?.name
       addForm.scrollToField(firstName)
@@ -52,7 +53,7 @@ const CreateDetailModal = ({
 
   return (
     <Modal
-      title="新增燈別"
+      title="新增燈座"
       open={open}
       onCancel={handleCancel}
       footer={[
@@ -60,7 +61,7 @@ const CreateDetailModal = ({
           取消
         </Button>,
         <Button
-          disabled={isCreateLight}
+          disabled={isCreating}
           key="ok"
           type="primary"
           onClick={handleAdd}
