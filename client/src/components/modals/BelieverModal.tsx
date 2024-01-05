@@ -282,64 +282,6 @@ function BelieverModal() {
   return (
     <>
       <Modal
-        title="新增信眾"
-        open={isCreateModalOpen}
-        onOk={handleCreate}
-        onCancel={() => {
-          createForm.resetFields()
-          setIsCreateModalOpen(false)
-        }}
-      >
-        <Form form={createForm} className="grid grid-cols-2 gap-x-2">
-          <Form.Item
-            label="姓名"
-            name="name"
-            rules={[{ required: true, message: '輸入姓名' }]}
-          >
-            <Input placeholder="請輸入姓名" autoFocus />
-          </Form.Item>
-          <Form.Item
-            label="電話"
-            name="phone"
-            rules={[{ required: true, message: '輸入電話' }]}
-          >
-            <Input placeholder="輸入電話" />
-          </Form.Item>
-          <Form.Item
-            label="生日"
-            name="birthday"
-            rules={[{ required: true, message: '輸入生日' }]}
-          >
-            <DatePicker
-              className="w-full"
-              format={'YYYY-MM-DD HH:mm:ss'}
-              showTime
-            />
-          </Form.Item>
-          <Form.Item
-            label="性別"
-            name="gender"
-            rules={[{ required: true, message: '選擇性別' }]}
-          >
-            <Select
-              options={[
-                { value: '男', label: '男' },
-                { value: '女', label: '女' },
-                { value: '其他', label: '其他' },
-              ]}
-              placeholder="性別"
-            />
-          </Form.Item>
-          <AddressInput
-            className="col-span-full"
-            form={updateForm}
-            name={'address'}
-            label={'地址'}
-            direction="col"
-          />
-        </Form>
-      </Modal>
-      <Modal
         destroyOnClose
         title={believer ? `信眾:${believer?.name}` : `信眾`}
         onCancel={onClose}
@@ -352,6 +294,64 @@ function BelieverModal() {
           </Button>,
         ]}
       >
+        <Modal
+          title="新增信眾"
+          open={isCreateModalOpen}
+          onOk={handleCreate}
+          onCancel={() => {
+            createForm.resetFields()
+            setIsCreateModalOpen(false)
+          }}
+        >
+          <Form form={createForm} className="grid grid-cols-2 gap-x-2">
+            <Form.Item
+              label="姓名"
+              name="name"
+              rules={[{ required: true, message: '輸入姓名' }]}
+            >
+              <Input placeholder="請輸入姓名" autoFocus />
+            </Form.Item>
+            <Form.Item
+              label="電話"
+              name="phone"
+              rules={[{ required: true, message: '輸入電話' }]}
+            >
+              <Input placeholder="輸入電話" />
+            </Form.Item>
+            <Form.Item
+              label="生日"
+              name="birthday"
+              rules={[{ required: true, message: '輸入生日' }]}
+            >
+              <DatePicker
+                className="w-full"
+                format={'YYYY-MM-DD HH:mm:ss'}
+                showTime
+              />
+            </Form.Item>
+            <Form.Item
+              label="性別"
+              name="gender"
+              rules={[{ required: true, message: '選擇性別' }]}
+            >
+              <Select
+                options={[
+                  { value: '男', label: '男' },
+                  { value: '女', label: '女' },
+                  { value: '其他', label: '其他' },
+                ]}
+                placeholder="性別"
+              />
+            </Form.Item>
+            <AddressInput
+              className="col-span-full"
+              form={updateForm}
+              name={'address'}
+              label={'地址'}
+              direction="col"
+            />
+          </Form>
+        </Modal>
         <Form form={updateForm}>
           <div className="mb-2 flex justify-end">
             <ExtendedButton

@@ -92,16 +92,21 @@ function ServiceModal() {
         return (
           <>
             <Form.Item initialValue={[]} name={id} className="mb-0">
-              <Checkbox.Group>
+              <Checkbox.Group className=" flex flex-wrap gap-3">
                 {serviceItems.map((item) => {
-                  if (item.isOrder) return <div>💡{item.name}</div>
                   return (
                     <Checkbox
                       disabled={serviceYear !== currentYear}
                       value={item}
                       key={item.id}
+                      className={item.isOrder ? ' pointer-events-none' : ''}
                     >
-                      {item.name}
+                      <div className="relative">
+                        {item.isOrder && (
+                          <div className="absolute -left-[25px] ">💡</div>
+                        )}
+                        {item.name}
+                      </div>
                     </Checkbox>
                   )
                 })}
