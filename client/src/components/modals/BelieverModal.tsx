@@ -1,26 +1,17 @@
-import {
-  Button,
-  DatePicker,
-  Form,
-  Input,
-  Modal,
-  Select,
-  Spin,
-  Table,
-} from 'antd'
+import { Button, Form, Modal, Table } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs, { Dayjs } from 'dayjs'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { create } from 'zustand'
 
-import { useUpdateEffect, useWindowInfo } from '@/hooks/useHook'
+import { useWindowInfo } from '@/hooks/useHook'
 import { useAntd } from '@/provider/AntdProvider'
 import { trpcClient, trpcQuery } from '@/provider/TrpcProvider'
 import { TrpcInputs, TrpcOutputs } from '@/types/trpc'
 
 import DropdownButton from '../buttons/DropdownButton'
 import ExtendedButton from '../buttons/ExtendedButton'
-import AddressInput from '../form/AddressInput'
+import FormItems from '../form/FormItems'
 import { useSearchBelieverModalStore } from './SearchBelieverModal'
 
 type BelieverModalStoreType = {
@@ -42,18 +33,22 @@ type DataType = Override<
   { key: string; birthday: dayjs.Dayjs }
 >
 
-type CreateFormType = Override<
-  TrpcInputs['believer']['createBeliever'],
-  {
-    birthday: Dayjs
-  }
+type CreateFormType = Prettify<
+  Override<
+    TrpcInputs['believer']['createBeliever'],
+    {
+      birthday: Dayjs
+    }
+  >
 >
 
-type UpdateFormType = Override<
-  TrpcInputs['believer']['updateBeliever'],
-  {
-    birthday: Dayjs
-  }
+type UpdateFormType = Prettify<
+  Override<
+    TrpcInputs['believer']['updateBeliever'],
+    {
+      birthday: Dayjs
+    }
+  >
 >
 
 function BelieverModal() {
@@ -71,13 +66,10 @@ function BelieverModal() {
   const [editKey, setEditKey] = useState<string | null>(null)
   const { message } = useAntd()
 
-  const {
-    data: result,
-    isFetching,
-    isError,
-  } = trpcQuery.believer.getBelieverById.useQuery(believer?.id as string, {
-    enabled: !!believer?.id,
-  })
+  const { data: result, isFetching } =
+    trpcQuery.believer.getBelieverById.useQuery(believer?.id as string, {
+      enabled: !!believer?.id,
+    })
   const data = result?.data || []
   const parent = result?.parent
 
@@ -116,17 +108,8 @@ function BelieverModal() {
       dataIndex: 'name',
       width: '120px',
       render: (_, props) => {
-        if (props.key.startsWith('new') || props.key === editKey) {
-          return (
-            <Form.Item
-              className="mb-0"
-              name="name"
-              rules={[{ required: true, message: '請輸入名字' }]}
-            >
-              <Input autoFocus />
-            </Form.Item>
-          )
-        }
+        if (props.key === editKey)
+          return <FormItems.Name className="mb-0" label={null} />
         return <div>{props.name}</div>
       },
     },
@@ -135,17 +118,8 @@ function BelieverModal() {
       dataIndex: 'phone',
       width: '140px',
       render: (_, props) => {
-        if (props.key === editKey) {
-          return (
-            <Form.Item
-              className="mb-0"
-              name="phone"
-              rules={[{ required: true, message: '輸入電話' }]}
-            >
-              <Input />
-            </Form.Item>
-          )
-        }
+        if (props.key === editKey)
+          return <FormItems.Phone className="mb-0" label={null} />
         return <div>{props.phone}</div>
       },
     },
@@ -154,17 +128,8 @@ function BelieverModal() {
       dataIndex: 'birthday',
       width: '130px',
       render: (_, props) => {
-        if (props.key === editKey) {
-          return (
-            <Form.Item
-              className="mb-0"
-              name="birthday"
-              rules={[{ required: true, message: '請輸入生日' }]}
-            >
-              <DatePicker format={'YYYY-MM-DD '} className="w-full" />
-            </Form.Item>
-          )
-        }
+        if (props.key === editKey)
+          return <FormItems.Birthday className="mb-0" label={null} />
 
         return <div>{dayjs(props.birthday).format('YYYY-MM-DD')}</div>
       },
@@ -177,20 +142,7 @@ function BelieverModal() {
       render: (_, props) => {
         if (props.key === editKey) {
           return (
-            <Form.Item
-              className="mx-[0px] mb-0"
-              name="gender"
-              rules={[{ required: true, message: '請輸入性別' }]}
-            >
-              <Select
-                options={[
-                  { value: '男', label: '男' },
-                  { value: '女', label: '女' },
-                  { value: '其他', label: '其他' },
-                ]}
-                placeholder="性別"
-              />
-            </Form.Item>
+            <FormItems.GenderSelect className="mx-[0px] mb-0" label={null} />
           )
         }
         return <div>{props.gender}</div>
@@ -202,10 +154,9 @@ function BelieverModal() {
       render: (_, props) => {
         if (props.key === editKey) {
           return (
-            <AddressInput
+            <FormItems.Address
               className="mb-0"
               form={updateForm}
-              name={'address'}
               label={false}
               direction="col"
             />
@@ -282,12 +233,12 @@ function BelieverModal() {
   return (
     <>
       <Modal
+        style={{ top: 20 }}
         destroyOnClose
         title={believer ? `信眾:${believer?.name}` : `信眾`}
         onCancel={onClose}
         open={isOpen}
         width={900}
-        centered
         footer={[
           <Button key="ok" type="primary" onClick={onClose}>
             關閉
@@ -304,50 +255,13 @@ function BelieverModal() {
           }}
         >
           <Form form={createForm} className="grid grid-cols-2 gap-x-2">
-            <Form.Item
-              label="姓名"
-              name="name"
-              rules={[{ required: true, message: '輸入姓名' }]}
-            >
-              <Input placeholder="請輸入姓名" autoFocus />
-            </Form.Item>
-            <Form.Item
-              label="電話"
-              name="phone"
-              rules={[{ required: true, message: '輸入電話' }]}
-            >
-              <Input placeholder="輸入電話" />
-            </Form.Item>
-            <Form.Item
-              label="生日"
-              name="birthday"
-              rules={[{ required: true, message: '輸入生日' }]}
-            >
-              <DatePicker
-                className="w-full"
-                format={'YYYY-MM-DD HH:mm:ss'}
-                showTime
-              />
-            </Form.Item>
-            <Form.Item
-              label="性別"
-              name="gender"
-              rules={[{ required: true, message: '選擇性別' }]}
-            >
-              <Select
-                options={[
-                  { value: '男', label: '男' },
-                  { value: '女', label: '女' },
-                  { value: '其他', label: '其他' },
-                ]}
-                placeholder="性別"
-              />
-            </Form.Item>
-            <AddressInput
+            <FormItems.Name />
+            <FormItems.Phone />
+            <FormItems.Birthday />
+            <FormItems.GenderSelect />
+            <FormItems.Address
               className="col-span-full"
-              form={updateForm}
-              name={'address'}
-              label={'地址'}
+              form={createForm}
               direction="col"
             />
           </Form>

@@ -261,13 +261,29 @@ export const believer = router({
       throw new TRPCError({ code: 'BAD_REQUEST', message: '找不到信眾' })
     }
     const { parent, children, orders: queryOrders, ...rest } = queryBeliever
-    const family = ((): {
-      id: string
-      name: string
-    }[] => {
-      if (!parent) return children
+    const familyInfo = ((): {
+      family: {
+        id: string
+        name: string
+      }[]
+      parent: {
+        id: string
+        name: string
+      }
+    } => {
+      if (!parent)
+        return {
+          family: children,
+          parent: {
+            id: rest.id,
+            name: rest.name,
+          },
+        }
       const { children: otherFamilyMembers, ...parentInfo } = parent
-      return [parentInfo, ...otherFamilyMembers]
+      return {
+        family: [parentInfo, ...otherFamilyMembers],
+        parent: parentInfo,
+      }
     })()
 
     type OrderType = {
@@ -305,7 +321,7 @@ export const believer = router({
       {}
     )
     const totalOrders = Object.values(totalOrdersObj)
-    const result = { ...rest, family, totalOrders }
+    const result = { ...rest, ...familyInfo, totalOrders }
     return result
   }),
 

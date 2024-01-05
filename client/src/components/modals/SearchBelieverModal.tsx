@@ -119,6 +119,7 @@ function SearchBelieverModal() {
     searchValue,
     {
       keepPreviousData: true,
+      enabled: isOpen,
     },
   )
   const columns: ColumnsType<DataType> = [

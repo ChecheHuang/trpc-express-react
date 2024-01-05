@@ -1,9 +1,10 @@
 import { Button, Checkbox, Form, Modal, Select } from 'antd'
 import { ColumnsType } from 'antd/es/table'
 import { Table } from 'antd/lib'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { create } from 'zustand'
 
+import { cn } from '@/lib/utils'
 import { useAntd } from '@/provider/AntdProvider'
 import { trpcClient, trpcQuery } from '@/provider/TrpcProvider'
 import { useUserStore } from '@/store/useUser'
@@ -38,6 +39,9 @@ const currentYear = new Date().getFullYear() - 1911
 function ServiceModal() {
   const [serviceYear, setServiceYear] = useState(currentYear)
   const { isOpen, onClose, info } = useServiceModalStore()
+  useEffect(() => {
+    if (isOpen) setServiceYear(currentYear)
+  }, [isOpen])
 
   const printModal = usePrintModalStore()
 
@@ -88,32 +92,39 @@ function ServiceModal() {
     },
     {
       title: ` ${serviceYear}年度${serviceCategory?.category}服務項目`,
-      render: (_, { name, serviceItems, id }) => {
-        return (
-          <>
+      render: (_, { name, serviceItems, id }, index) => {
+        const isOdd = index % 2 === 0
+        return {
+          props: {
+            className: cn(isOdd ? 'bg-gray-100' : 'bg-white'),
+          },
+          children: (
             <Form.Item initialValue={[]} name={id} className="mb-0">
               <Checkbox.Group className=" flex flex-wrap gap-3">
-                {serviceItems.map((item) => {
-                  return (
-                    <Checkbox
-                      disabled={serviceYear !== currentYear}
-                      value={item}
-                      key={item.id}
-                      className={item.isOrder ? ' pointer-events-none' : ''}
-                    >
-                      <div className="relative">
-                        {item.isOrder && (
-                          <div className="absolute -left-[25px] ">💡</div>
-                        )}
-                        {item.name}
-                      </div>
-                    </Checkbox>
+                {serviceItems
+                  .filter(
+                    ({ isOrder }) => !(serviceYear !== currentYear && !isOrder),
                   )
-                })}
+                  .map((item) => {
+                    return (
+                      <Checkbox
+                        value={item}
+                        key={item.id}
+                        className={item.isOrder ? ' pointer-events-none' : ''}
+                      >
+                        <div className="relative">
+                          {item.isOrder && (
+                            <div className="absolute -left-[25px] ">💡</div>
+                          )}
+                          {item.name}
+                        </div>
+                      </Checkbox>
+                    )
+                  })}
               </Checkbox.Group>
             </Form.Item>
-          </>
-        )
+          ),
+        }
       },
     },
   ]

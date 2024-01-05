@@ -23,12 +23,18 @@ const AddressInput = ({
   direction = 'row',
   initialValue,
 }: AddressInputProps) => {
-  const formValue = initialValue ? initialValue : form.getFieldValue(name) || ''
+  const formValue: string = initialValue
+    ? initialValue
+    : form.getFieldValue(name) || ''
+
   const [city, district, address] = formValue.split(/(?<=市|縣|區|鎮)/)
   const [addressDetail, setAddressDetail] = useState(address || '')
   const [cityAndArea, setCityAndArea] = useState<(string | number)[]>(
     city ? [city, district] : [],
   )
+
+  // console.log(formValue)
+
   const addressInputRef = useRef(null)
 
   const { data: citys = {} } = trpcQuery.options.cityOptions.useQuery()
@@ -44,6 +50,12 @@ const AddressInput = ({
       })),
     }))
   }, [citys])
+
+  useUpdateEffect(() => {
+    const [city, district, address] = formValue.split(/(?<=市|縣|區|鎮)/)
+    setCityAndArea([city, district])
+    setAddressDetail(address || '')
+  }, [formValue])
 
   useUpdateEffect(() => {
     const addressPrefix = cityAndArea.join('')

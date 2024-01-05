@@ -17,13 +17,12 @@ const tokenSchema = z.object({
 export const auth = router({
   onLogin: procedure.subscription(() => {
     return observable<string>((emit) => {
-      eventEmitter.on('login', (data) => {
+      const listener = (data: any) => {
         emit.next(data)
-      })
+      }
+      eventEmitter.on('login', listener)
       return () => {
-        eventEmitter.off('login', (data) => {
-          emit.next(data)
-        })
+        eventEmitter.off('login', listener)
       }
     })
   }),

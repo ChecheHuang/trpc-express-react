@@ -15,6 +15,7 @@ import ExtendedButton from '@/components/buttons/ExtendedButton'
 import PrevButton from '@/components/buttons/PrevButton'
 import Container from '@/components/container/Container'
 import AddressInput from '@/components/form/AddressInput'
+import FormItems from '@/components/form/FormItems'
 import { useAntd } from '@/provider/AntdProvider'
 import { trpcClient, trpcQuery } from '@/provider/TrpcProvider'
 import { useTheme, SizeType } from '@/store/useTheme'
@@ -22,9 +23,11 @@ import { TrpcOutputs } from '@/types/trpc'
 
 type DataType = TrpcOutputs['believer']['getBelieverDetailsById']
 
+type FormType = Prettify<Override<DataType, { birthday: Dayjs }>>
+
 const BelieverIdPage = () => {
   const id = useParams().believerId as string
-  const [form] = Form.useForm<Override<DataType, { birthday: Dayjs }>>()
+  const [form] = Form.useForm<FormType>()
   const { size } = useTheme()
   const { message } = useAntd()
   const navigate = useNavigate()
@@ -40,12 +43,15 @@ const BelieverIdPage = () => {
       gender: '',
       birthday: '',
       family: [],
+      parent: {
+        id: '',
+        name: '',
+      },
     },
     isFetching,
-  } = trpcQuery.believer.getBelieverDetailsById.useQuery(id, {
-    refetchOnMount: true,
-  })
-  const { totalOrders, birthday, family, ...rest } = data
+    refetch,
+  } = trpcQuery.believer.getBelieverDetailsById.useQuery(id)
+  const { totalOrders, birthday, family, parent, ...rest } = data
   const formData = useMemo(
     () => ({
       ...rest,
@@ -55,7 +61,9 @@ const BelieverIdPage = () => {
   )
   useEffect(() => {
     if (!formData?.id) return
+    // console.log(formData)
     form.setFieldsValue(formData)
+    console.log(formData)
   }, [formData, form])
 
   const items: TabsProps['items'] = totalOrders.map(({ year, orders }) => ({
@@ -79,6 +87,7 @@ const BelieverIdPage = () => {
       await trpcClient.believer.updateBeliever.mutate(updateData)
       message.success('更新成功')
       utils.believer.invalidate()
+      // refetch()
     } catch (error: any) {
       console.log(error)
       const firstName = error?.errorFields[0]?.name
@@ -95,7 +104,7 @@ const BelieverIdPage = () => {
       <MyCard title="信眾資料">
         <Form
           form={form}
-          initialValues={formData}
+          // initialValues={formData}
           labelCol={{ span: size !== SizeType.small ? 6 : 12 }}
           layout={size !== SizeType.small ? 'horizontal' : 'vertical'}
         >
@@ -104,28 +113,28 @@ const BelieverIdPage = () => {
             <ChangeSizeRadio />
           </div>
           <Group groupTitle="基本資料">
-            <Form.Item label="姓名" name="name">
-              <Input />
-            </Form.Item>
-            <Form.Item label="電話" name="phone">
-              <Input />
-            </Form.Item>
-            <AddressInput form={form} />
-            <Form.Item label="生日" name="birthday">
-              <DatePicker format={'YYYY-MM-DD'} className="w-full" />
-            </Form.Item>
-            <Form.Item label="性別" name="gender">
-              <Radio.Group options={['男', '女', '其他']} />
-            </Form.Item>
-            <Form.Item label="家庭成員">
+            <FormItems.Name />
+            <FormItems.Phone />
+            <FormItems.Birthday />
+            <FormItems.GenderRadio />
+            <FormItems.Address form={form} direction="col" />
+            <Form.Item
+              label={
+                <div>
+                  家庭成員
+                  <br />
+                  戶長({parent.name})
+                </div>
+              }
+            >
               {family.map((member) => (
                 <Button
                   key={member.id}
-                  onClick={() =>
+                  onClick={() => {
                     navigate(
                       `/setting/data_creation/believer_list/${member.id}`,
                     )
-                  }
+                  }}
                   type="link"
                 >
                   {member.name}
@@ -142,7 +151,7 @@ const BelieverIdPage = () => {
               </ExtendedButton>
             </Form.Item>
           </Group>
-          <Group groupTitle="訂單資料">
+          <Group groupTitle="服務紀錄">
             <Tabs
               className="col-span-full"
               defaultActiveKey="1"
