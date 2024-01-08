@@ -4,7 +4,6 @@ import { useReactToPrint } from 'react-to-print'
 
 import Container from '@/components/container/Container'
 import { convertToChineseNumber } from '@/lib/utils'
-import { trpcQuery } from '@/provider/TrpcProvider'
 import { useTemple } from '@/store/useTemple'
 import { useUserStore } from '@/store/useUser'
 import { TrpcOutputs } from '@/types/trpc'
@@ -14,9 +13,6 @@ const ThankPage = () => {
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
   })
-
-  const { data } = trpcQuery.print.getPrints.useQuery()
-  console.log(data)
 
   return (
     <Container>

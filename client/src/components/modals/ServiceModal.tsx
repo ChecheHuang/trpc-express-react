@@ -93,38 +93,32 @@ function ServiceModal() {
     {
       title: ` ${serviceYear}年度${serviceCategory?.category}服務項目`,
       render: (_, { name, serviceItems, id }, index) => {
-        const isOdd = index % 2 === 0
-        return {
-          props: {
-            className: cn(isOdd ? 'bg-gray-100' : 'bg-white'),
-          },
-          children: (
-            <Form.Item initialValue={[]} name={id} className="mb-0">
-              <Checkbox.Group className=" flex flex-wrap gap-3">
-                {serviceItems
-                  .filter(
-                    ({ isOrder }) => !(serviceYear !== currentYear && !isOrder),
+        return (
+          <Form.Item initialValue={[]} name={id} className="mb-0">
+            <Checkbox.Group className=" flex flex-wrap gap-3">
+              {serviceItems
+                .filter(
+                  ({ isOrder }) => !(serviceYear !== currentYear && !isOrder),
+                )
+                .map((item) => {
+                  return (
+                    <Checkbox
+                      value={item}
+                      key={item.id}
+                      className={item.isOrder ? ' pointer-events-none' : ''}
+                    >
+                      <div className="relative">
+                        {item.isOrder && (
+                          <div className="absolute -left-[25px] ">💡</div>
+                        )}
+                        {item.name}
+                      </div>
+                    </Checkbox>
                   )
-                  .map((item) => {
-                    return (
-                      <Checkbox
-                        value={item}
-                        key={item.id}
-                        className={item.isOrder ? ' pointer-events-none' : ''}
-                      >
-                        <div className="relative">
-                          {item.isOrder && (
-                            <div className="absolute -left-[25px] ">💡</div>
-                          )}
-                          {item.name}
-                        </div>
-                      </Checkbox>
-                    )
-                  })}
-              </Checkbox.Group>
-            </Form.Item>
-          ),
-        }
+                })}
+            </Checkbox.Group>
+          </Form.Item>
+        )
       },
     },
   ]

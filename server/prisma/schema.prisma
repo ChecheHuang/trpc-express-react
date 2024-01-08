@@ -243,7 +243,6 @@ model ServiceItemDetail {
 model Order {
   id       String @id @default(cuid())
   rank     Int    @unique @default(autoincrement())
-  printId  Int    @default(1) // 組別
   year     Int
   price    Int
   note     String @default("")
@@ -262,4 +261,17 @@ model Order {
 
   serviceItemId String
   serviceItem   ServiceItem @relation(fields: [serviceItemId], references: [id], onDelete: Cascade)
+
+  printId String
+  print   Print  @relation(fields: [printId], references: [id], onDelete: Cascade)
+}
+
+model Print {
+  id   String @id @default(cuid())
+  rank Int    @unique @default(autoincrement())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders Order[]
 }

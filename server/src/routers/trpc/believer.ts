@@ -290,7 +290,7 @@ export const believer = router({
       year: string
       orders: {
         rank: number
-        printId: number
+        printId: string
         price: number
         note: string
         position: string
