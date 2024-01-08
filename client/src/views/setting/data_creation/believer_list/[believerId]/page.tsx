@@ -1,6 +1,6 @@
 import { Tabs } from 'antd'
 import type { TabsProps } from 'antd'
-import { Button, DatePicker, Form, Input, Radio, Select } from 'antd'
+import { Button, Form } from 'antd'
 import { ColumnsType } from 'antd/es/table'
 import { Table } from 'antd/lib'
 import dayjs, { Dayjs } from 'dayjs'
@@ -14,7 +14,6 @@ import MyCard from '@/components/MyCard'
 import ExtendedButton from '@/components/buttons/ExtendedButton'
 import PrevButton from '@/components/buttons/PrevButton'
 import Container from '@/components/container/Container'
-import AddressInput from '@/components/form/AddressInput'
 import FormItems from '@/components/form/FormItems'
 import { useAntd } from '@/provider/AntdProvider'
 import { trpcClient, trpcQuery } from '@/provider/TrpcProvider'
@@ -49,7 +48,6 @@ const BelieverIdPage = () => {
       },
     },
     isFetching,
-    refetch,
   } = trpcQuery.believer.getBelieverDetailsById.useQuery(id)
   const { totalOrders, birthday, family, parent, ...rest } = data
   const formData = useMemo(
@@ -59,12 +57,6 @@ const BelieverIdPage = () => {
     }),
     [rest, birthday],
   )
-  useEffect(() => {
-    if (!formData?.id) return
-    // console.log(formData)
-    form.setFieldsValue(formData)
-    console.log(formData)
-  }, [formData, form])
 
   const items: TabsProps['items'] = totalOrders.map(({ year, orders }) => ({
     key: year.toString(),
@@ -87,7 +79,6 @@ const BelieverIdPage = () => {
       await trpcClient.believer.updateBeliever.mutate(updateData)
       message.success('更新成功')
       utils.believer.invalidate()
-      // refetch()
     } catch (error: any) {
       console.log(error)
       const firstName = error?.errorFields[0]?.name
@@ -96,6 +87,9 @@ const BelieverIdPage = () => {
       fieldInput && fieldInput.focus()
     }
   }
+  useEffect(() => {
+    form.setFieldsValue(formData)
+  }, [formData, form])
 
   if (isFetching) return <Loading />
 
@@ -104,7 +98,7 @@ const BelieverIdPage = () => {
       <MyCard title="信眾資料">
         <Form
           form={form}
-          // initialValues={formData}
+          initialValues={formData}
           labelCol={{ span: size !== SizeType.small ? 6 : 12 }}
           layout={size !== SizeType.small ? 'horizontal' : 'vertical'}
         >

@@ -4,7 +4,7 @@ import { useReactToPrint } from 'react-to-print'
 import { create } from 'zustand'
 
 import { TrpcOutputs } from '@/types/trpc'
-import { ThankPrint } from '@/views/setting/print/thank/page'
+import { ThankPrint } from '@/views/setting/template/thank/page'
 
 type PrintModalStoreType = {
   orders: TrpcOutputs['order']['createOrder']

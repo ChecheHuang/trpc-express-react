@@ -1,6 +1,6 @@
 import { Cascader, Form, AutoComplete } from 'antd'
 import { FormInstance } from 'antd/lib'
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { useUpdateEffect } from '@/hooks/useHook'
 import { cn } from '@/lib/utils'
@@ -12,7 +12,6 @@ type AddressInputProps = {
   name?: string
   label?: string | boolean
   direction?: 'row' | 'col'
-  initialValue?: string
 }
 
 const AddressInput = ({
@@ -21,19 +20,11 @@ const AddressInput = ({
   label = '地址',
   className,
   direction = 'row',
-  initialValue,
 }: AddressInputProps) => {
-  const formValue: string = initialValue
-    ? initialValue
-    : form.getFieldValue(name) || ''
+  const [isInitSetUp, setIsInitSetUp] = useState(false)
 
-  const [city, district, address] = formValue.split(/(?<=市|縣|區|鎮)/)
-  const [addressDetail, setAddressDetail] = useState(address || '')
-  const [cityAndArea, setCityAndArea] = useState<(string | number)[]>(
-    city ? [city, district] : [],
-  )
-
-  // console.log(formValue)
+  const [addressDetail, setAddressDetail] = useState('')
+  const [cityAndArea, setCityAndArea] = useState<(string | number)[]>([])
 
   const addressInputRef = useRef(null)
 
@@ -51,15 +42,19 @@ const AddressInput = ({
     }))
   }, [citys])
 
-  useUpdateEffect(() => {
-    const [city, district, address] = formValue.split(/(?<=市|縣|區|鎮)/)
-    setCityAndArea([city, district])
+  const formValue: string = form.getFieldValue(name) || ''
+  useEffect(() => {
+    if (isInitSetUp) return
+    const [city, district, address] = formValue.split(/(?<=市|縣|區|鎮|鄉)/)
+    setCityAndArea(city ? [city, district] : [])
     setAddressDetail(address || '')
-  }, [formValue])
+  }, [formValue, isInitSetUp])
 
   useUpdateEffect(() => {
     const addressPrefix = cityAndArea.join('')
-    form.setFieldValue(name, addressPrefix + addressDetail)
+    const address = addressPrefix + addressDetail
+    form.setFieldValue(name, address)
+    setIsInitSetUp(true)
   }, [cityAndArea, addressDetail])
 
   const autoCompleteOptions = useMemo(() => {

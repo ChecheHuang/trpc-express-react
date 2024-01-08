@@ -9,7 +9,7 @@ import { useTemple } from '@/store/useTemple'
 import { useUserStore } from '@/store/useUser'
 import { TrpcOutputs } from '@/types/trpc'
 
-const DomPage = () => {
+const ThankPage = () => {
   const printRef = useRef<HTMLDivElement>(null)
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
@@ -28,7 +28,7 @@ const DomPage = () => {
   )
 }
 
-export default DomPage
+export default ThankPage
 
 type Props = {
   orders?: TrpcOutputs['order']['createOrder']

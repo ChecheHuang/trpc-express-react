@@ -27,14 +27,20 @@ export const options = router({
         },
       })
 
-      const result = citys.reduce((acc, { name, areas }) => {
-        const area = areas.reduce((acc, { name, roads }) => {
-          acc[name] = roads.map(({ name }) => name)
+      const result = citys.reduce(
+        (acc, { name, areas }) => {
+          const area = areas.reduce(
+            (acc, { name, roads }) => {
+              acc[name] = roads.map(({ name }) => name)
+              return acc
+            },
+            {} as Record<string, any>
+          )
+          acc[name] = area
           return acc
-        }, {} as any)
-        acc[name] = area
-        return acc
-      }, {} as any)
+        },
+        {} as Record<string, any>
+      )
 
       return result
     }),

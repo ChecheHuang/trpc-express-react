@@ -4,6 +4,6 @@
 const meta = {
   page: {
     index: 1,
-    name: '感謝狀',
+    name: '服務資料',
   },
 }

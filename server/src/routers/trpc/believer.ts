@@ -281,7 +281,7 @@ export const believer = router({
         }
       const { children: otherFamilyMembers, ...parentInfo } = parent
       return {
-        family: [parentInfo, ...otherFamilyMembers],
+        family: otherFamilyMembers,
         parent: parentInfo,
       }
     })()
