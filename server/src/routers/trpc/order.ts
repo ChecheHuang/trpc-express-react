@@ -1,5 +1,6 @@
 import prismadb from '../../lib/prismadb'
 import { router, procedure, privateProcedure } from '../../lib/trpc'
+import { believer } from './believer'
 import { TRPCError } from '@trpc/server'
 import { Mutex, withTimeout } from 'async-mutex'
 import { z } from 'zod'
@@ -60,6 +61,75 @@ export const order = router({
     return updatedData
   }),
 
+  getOrdersByPrintId: privateProcedure.input(z.string()).query(async ({ input }) => {
+    const orders = await prismadb.order.findMany({
+      where: {
+        printId: input,
+      },
+      select: {
+        id: true,
+        year: true,
+        price: true,
+        believer: {
+          select: {
+            name: true,
+            address: true,
+            parentId: true,
+          },
+        },
+        serviceItem: {
+          select: {
+            name: true,
+            service: {
+              select: {
+                category: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    const result = orders.reduce(
+      (
+        acc: {
+          believer: string
+          address: string
+          year: number
+          price: number
+          isParent: boolean
+          serviceItems: {
+            name: string
+            service: string
+          }[]
+        }[],
+        curr
+      ) => {
+        const existingBeliever = acc.find((item) => item.believer === curr.believer.name)
+        const serviceItem = {
+          name: curr.serviceItem.name,
+          service: curr.serviceItem.service.category,
+        }
+        if (existingBeliever) {
+          existingBeliever.serviceItems.push(serviceItem)
+          existingBeliever.price += curr.price
+        } else {
+          acc.push({
+            believer: curr.believer.name,
+            address: curr.believer.address,
+            year: curr.year,
+            price: curr.price,
+            isParent: curr.believer.parentId === null,
+            serviceItems: [serviceItem],
+          })
+        }
+        return acc
+      },
+      []
+    )
+    return result
+  }),
+
   createOrder: privateProcedure
     .input(
       z.array(
@@ -82,7 +152,6 @@ export const order = router({
             }
             price: number
             position: string
-            printId: string
           }[] = []
           await prismadb.$transaction(async (prismadb) => {
             const printId = (
@@ -167,39 +236,38 @@ export const order = router({
                 totalOrder.push(newOrder)
               }
             }
+            return printId
           })
-          const orders = totalOrder.reduce(
-            (
-              acc,
-              {
-                serviceItem: {
-                  service: { category },
-                  name,
-                },
-                price,
-                printId,
-              }
-            ) => {
-              const existingItem = acc.find((item) => item.category === category && item.name === name)
+          // const orders = totalOrder.reduce(
+          //   (
+          //     acc,
+          //     {
+          //       serviceItem: {
+          //         service: { category },
+          //         name,
+          //       },
+          //       price,
+          //     }
+          //   ) => {
+          //     const existingItem = acc.find((item) => item.category === category && item.name === name)
 
-              if (existingItem) {
-                existingItem.count++
-                existingItem.price += price
-              } else {
-                acc.push({ category, name, printId, count: 1, price })
-              }
+          //     if (existingItem) {
+          //       existingItem.count++
+          //       existingItem.price += price
+          //     } else {
+          //       acc.push({ category, name, count: 1, price })
+          //     }
 
-              return acc
-            },
-            [] as {
-              category: string
-              name: string
-              count: number
-              price: number
-              printId: string
-            }[]
-          )
-          return orders
+          //     return acc
+          //   },
+          //   [] as {
+          //     category: string
+          //     name: string
+          //     count: number
+          //     price: number
+          //   }[]
+          // )
+          // return orders
         })
 
         return newOrder

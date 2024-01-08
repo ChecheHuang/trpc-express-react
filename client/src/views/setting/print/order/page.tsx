@@ -15,7 +15,7 @@ const OrderPage = () => {
   const { data: queryData = [] } = trpcQuery.order.getPrints.useQuery()
 
   const columns: ColumnsType<PrintDataType> = [
-    { title: 'ID', dataIndex: 'id', key: 'id' },
+    // { title: 'ID', dataIndex: 'id', key: 'id' },
     { title: '排序', dataIndex: 'rank', key: 'rank' },
     { title: '總金額', dataIndex: 'totalPrice', key: 'totalPrice' },
     {
@@ -34,16 +34,34 @@ const OrderPage = () => {
           expandable={{
             expandedRowRender: ({ orders }) => {
               const expandedColumns: TableColumnsType<OrderDataType> = [
-                { title: '年分', dataIndex: 'year' },
                 {
-                  title: '價格',
-                  dataIndex: 'price',
+                  title: '信眾',
+                  render: (_, order) => {
+                    return <div>{order.believer.name}</div>
+                  },
                 },
+                { title: '年分', dataIndex: 'year' },
                 {
                   title: '種類',
                   render: (_, order) => {
                     return <div>{order.serviceItem.service.category}</div>
                   },
+                },
+                {
+                  title: '項目',
+                  render: (_, order) => {
+                    return <div>{order.serviceItem.name}</div>
+                  },
+                },
+                {
+                  title: '位置',
+                  render: (_, order) => {
+                    return <div>{order.position}</div>
+                  },
+                },
+                {
+                  title: '價格',
+                  dataIndex: 'price',
                 },
               ]
               return (

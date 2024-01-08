@@ -134,9 +134,10 @@ function ServiceModal() {
     const orders = await trpcClient.order.createOrder.mutate(submitData)
     refetch()
     utils.believer.getBelieverDetailsById.invalidate()
+    utils.order.getPrints.invalidate()
     form.resetFields()
     message.success('成功新增服務項目')
-    printModal.setOrders(orders)
+    printModal.setPrintId(orders)
     printModal.onOpen()
   }
 
