@@ -1,13 +1,19 @@
+import { Tag, Modal, Form, Input, Select } from 'antd'
+import { ColumnsType, TablePaginationConfig } from 'antd/es/table'
+import { useState } from 'react'
+
+import { useMutation } from '@tanstack/react-query'
+
 import ExtendedButton from '@/components/buttons/ExtendedButton'
 import TableTemplate from '@/components/table/TableTemplate'
 import useQueryStringObj from '@/hooks/useQueryStringObj'
 import { useAntd } from '@/provider/AntdProvider'
-import { trpcClient, trpcQuery } from '@/provider/TrpcProvider'
-import { TrpcInputs, TrpcOutputs } from '@/types/trpc'
-import { useMutation } from '@tanstack/react-query'
-import { Tag, Modal, Form, Input, Select } from 'antd'
-import { ColumnsType, TablePaginationConfig } from 'antd/es/table'
-import { useState } from 'react'
+import {
+  trpcClient,
+  trpcQuery,
+  TrpcInputs,
+  TrpcOutputs,
+} from '@/provider/TrpcProvider'
 
 type UserType = GetArrType<TrpcOutputs['permission']['usersWithRoles']['data']>
 

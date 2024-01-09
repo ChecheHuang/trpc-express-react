@@ -94,6 +94,16 @@ export const onCopy = (description: string) => {
   navigator.clipboard.writeText(description)
 }
 
+export const formatDate = {
+  toChinese(date: string) {
+    const orderDay = new Date(date)
+    const year = orderDay.getFullYear() - 1911
+    const month = orderDay.getMonth() + 1
+    const day = orderDay.getDate()
+    return `中華民國${year}年${month}月${day}日`
+  },
+}
+
 export function convertToChineseNumber(number: number) {
   const chineseNumberMap = {
     0: '零',

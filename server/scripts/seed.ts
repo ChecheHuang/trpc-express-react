@@ -27,8 +27,8 @@ const deleteData = async () => {
   await prismadb.$queryRaw`ALTER TABLE route AUTO_INCREMENT = 1;`
   await prismadb['service'].deleteMany()
   await prismadb.$queryRaw`ALTER TABLE service AUTO_INCREMENT = 1;`
-  await prismadb['order'].deleteMany()
-  // await prismadb.$queryRaw`ALTER TABLE order AUTO_INCREMENT = 1;`
+  await prismadb['print'].deleteMany()
+  await prismadb.$queryRaw`ALTER TABLE print AUTO_INCREMENT = 1;`
 }
 
 interface Road {

@@ -6,9 +6,8 @@ import { create } from 'zustand'
 
 import { cn } from '@/lib/utils'
 import { useAntd } from '@/provider/AntdProvider'
-import { trpcClient, trpcQuery } from '@/provider/TrpcProvider'
+import { trpcClient, trpcQuery, TrpcOutputs } from '@/provider/TrpcProvider'
 import { useUserStore } from '@/store/useUser'
-import { TrpcOutputs } from '@/types/trpc'
 
 import { usePrintModalStore } from './PrintModal'
 
@@ -131,14 +130,13 @@ function ServiceModal() {
         serviceItemIds: serviceItems.map((item: { id: string }) => item.id),
       }),
     )
-    const orders = await trpcClient.order.createOrder.mutate(submitData)
+    const printId = await trpcClient.order.createOrder.mutate(submitData)
     refetch()
     utils.believer.getBelieverDetailsById.invalidate()
     utils.order.getPrints.invalidate()
     form.resetFields()
     message.success('成功新增服務項目')
-    printModal.setPrintId(orders)
-    printModal.onOpen()
+    printModal.onOpen(printId)
   }
 
   return (
@@ -195,7 +193,11 @@ function ServiceModal() {
             />
           </div>
           <Form.Item className="col-span-full mb-0 mt-2 flex justify-center">
-            <Button onClick={handleSubmit} type="primary">
+            <Button
+              disabled={!totalPrice}
+              onClick={handleSubmit}
+              type="primary"
+            >
               送出
             </Button>
           </Form.Item>

@@ -2,6 +2,8 @@ import tailwindScrollbar from 'tailwind-scrollbar'
 import type { Config } from 'tailwindcss'
 import tailwindcssAnimate from 'tailwindcss-animate'
 
+import { writingModePlugin } from './src/lib/tailwindcss/writingMode-plugin'
+
 const config = {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
@@ -15,7 +17,7 @@ const config = {
       // },
     },
   },
-  plugins: [tailwindScrollbar, tailwindcssAnimate],
+  plugins: [tailwindScrollbar, tailwindcssAnimate, writingModePlugin],
   corePlugins: {
     preflight: false,
   },

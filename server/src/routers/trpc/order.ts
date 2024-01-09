@@ -1,6 +1,5 @@
 import prismadb from '../../lib/prismadb'
-import { router, procedure, privateProcedure } from '../../lib/trpc'
-import { believer } from './believer'
+import { router, privateProcedure } from '../../lib/trpc'
 import { TRPCError } from '@trpc/server'
 import { Mutex, withTimeout } from 'async-mutex'
 import { z } from 'zod'
@@ -10,6 +9,9 @@ const mutexWithTimeout = withTimeout(new Mutex(), 5000, new Error('請稍待再�
 export const order = router({
   getPrints: privateProcedure.query(async () => {
     const prints = await prismadb.print.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
       select: {
         id: true,
         rank: true,
@@ -25,6 +27,7 @@ export const order = router({
               select: {
                 id: true,
                 name: true,
+                parentId: true,
               },
             },
             serviceItem: {
@@ -45,11 +48,27 @@ export const order = router({
       const totalPrice = item.orders.reduce((acc, order) => {
         return acc + order.price
       }, 0)
+      const year = item.orders[0].year
+      const category = item.orders[0].serviceItem.service.category
+
+      const nameMap: { [name: string]: boolean } = {}
+      const names = item.orders
+        .reduce((acc: string[], order) => {
+          if (!nameMap[order.believer.name]) {
+            nameMap[order.believer.name] = true
+            acc.push(order.believer.name)
+          }
+          return acc
+        }, [])
+        .join('、')
 
       return {
         ...item,
         key: item.id,
         totalPrice,
+        year,
+        category,
+        names,
         orders: item.orders.map((order) => {
           return {
             ...order,
@@ -61,43 +80,51 @@ export const order = router({
     return updatedData
   }),
 
-  getOrdersByPrintId: privateProcedure.input(z.string()).query(async ({ input }) => {
-    const orders = await prismadb.order.findMany({
+  getPrintById: privateProcedure.input(z.string()).query(async ({ input }) => {
+    const print = await prismadb.print.findUnique({
       where: {
-        printId: input,
+        id: input,
       },
       select: {
         id: true,
-        year: true,
-        price: true,
-        believer: {
+        rank: true,
+        createdAt: true,
+        orders: {
           select: {
-            name: true,
-            address: true,
-            parentId: true,
-          },
-        },
-        serviceItem: {
-          select: {
-            name: true,
-            service: {
+            id: true,
+            year: true,
+            price: true,
+            believer: {
               select: {
-                category: true,
+                name: true,
+                address: true,
+                parentId: true,
+              },
+            },
+            serviceItem: {
+              select: {
+                name: true,
+                service: {
+                  select: {
+                    category: true,
+                  },
+                },
               },
             },
           },
         },
       },
     })
-
-    const result = orders.reduce(
+    if (print === null) throw new TRPCError({ code: 'NOT_FOUND', message: '找不到該筆資料' })
+    let printAddress = ''
+    let totalPrice = 0
+    const orders = print.orders.reduce(
       (
         acc: {
           believer: string
           address: string
           year: number
           price: number
-          isParent: boolean
           serviceItems: {
             name: string
             service: string
@@ -110,24 +137,27 @@ export const order = router({
           name: curr.serviceItem.name,
           service: curr.serviceItem.service.category,
         }
+        totalPrice += curr.price
         if (existingBeliever) {
           existingBeliever.serviceItems.push(serviceItem)
           existingBeliever.price += curr.price
-        } else {
-          acc.push({
-            believer: curr.believer.name,
-            address: curr.believer.address,
-            year: curr.year,
-            price: curr.price,
-            isParent: curr.believer.parentId === null,
-            serviceItems: [serviceItem],
-          })
+          return acc
+        }
+        acc.push({
+          believer: curr.believer.name,
+          address: curr.believer.address,
+          year: curr.year,
+          price: curr.price,
+          serviceItems: [serviceItem],
+        })
+        if (curr.believer.parentId === null) {
+          printAddress = curr.believer.address
         }
         return acc
       },
       []
     )
-    return result
+    return { orders, printAddress, totalPrice, rank: print.rank, createdAt: print.createdAt }
   }),
 
   createOrder: privateProcedure
@@ -142,18 +172,8 @@ export const order = router({
     .mutation(async ({ input, ctx }) => {
       const userId = ctx.user?.id as string
       try {
-        const newOrder = await mutexWithTimeout.runExclusive(async () => {
-          const totalOrder: {
-            serviceItem: {
-              service: {
-                category: string
-              }
-              name: string
-            }
-            price: number
-            position: string
-          }[] = []
-          await prismadb.$transaction(async (prismadb) => {
+        return await mutexWithTimeout.runExclusive(async () => {
+          return await prismadb.$transaction(async (prismadb) => {
             const printId = (
               await prismadb.print.create({
                 data: {},
@@ -200,7 +220,7 @@ export const order = router({
                 })
                 const position = `${name}-${current}`
 
-                const newOrder = await prismadb.order.create({
+                await prismadb.order.create({
                   data: {
                     userId,
                     believerId,
@@ -210,67 +230,13 @@ export const order = router({
                     year: serviceItem.year,
                     position,
                   },
-                  select: {
-                    believer: {
-                      select: {
-                        id: true,
-                        name: true,
-                        address: true,
-                      },
-                    },
-                    price: true,
-                    position: true,
-                    printId: true,
-                    serviceItem: {
-                      select: {
-                        name: true,
-                        service: {
-                          select: {
-                            category: true,
-                          },
-                        },
-                      },
-                    },
-                  },
                 })
-                totalOrder.push(newOrder)
               }
             }
+
             return printId
           })
-          // const orders = totalOrder.reduce(
-          //   (
-          //     acc,
-          //     {
-          //       serviceItem: {
-          //         service: { category },
-          //         name,
-          //       },
-          //       price,
-          //     }
-          //   ) => {
-          //     const existingItem = acc.find((item) => item.category === category && item.name === name)
-
-          //     if (existingItem) {
-          //       existingItem.count++
-          //       existingItem.price += price
-          //     } else {
-          //       acc.push({ category, name, count: 1, price })
-          //     }
-
-          //     return acc
-          //   },
-          //   [] as {
-          //     category: string
-          //     name: string
-          //     count: number
-          //     price: number
-          //   }[]
-          // )
-          // return orders
         })
-
-        return newOrder
       } catch (error: any) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',

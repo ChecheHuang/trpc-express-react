@@ -14,9 +14,8 @@ import { useServiceModalStore } from '@/components/modals/ServiceModal'
 import { GetColumnSearchProps } from '@/components/utils/GetColumnSearchProps'
 import { useWindowInfo } from '@/hooks/useHook'
 import { useAntd } from '@/provider/AntdProvider'
-import { trpcQuery } from '@/provider/TrpcProvider'
+import { trpcQuery,TrpcInputs, TrpcOutputs } from '@/provider/TrpcProvider'
 import { useTheme } from '@/store/useTheme'
-import { TrpcInputs, TrpcOutputs } from '@/types/trpc'
 
 type DataType = GetArrType<TrpcOutputs['believer']['getBelievers']['data']>
 type QueryDataType = TrpcInputs['believer']['getBelievers']

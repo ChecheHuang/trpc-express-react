@@ -8,7 +8,7 @@ import PrevButton from '@/components/buttons/PrevButton'
 import Container from '@/components/container/Container'
 import AddressInput from '@/components/form/AddressInput'
 import { useTemple } from '@/store/useTemple'
-import { TrpcInputs } from '@/types/trpc'
+import { TrpcInputs } from '@/provider/TrpcProvider'
 
 type FormType = TrpcInputs['temple']['updateTemple']
 

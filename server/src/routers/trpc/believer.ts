@@ -250,6 +250,11 @@ export const believer = router({
             serviceItem: {
               select: {
                 name: true,
+                service: {
+                  select: {
+                    category: true,
+                  },
+                },
               },
             },
           },
@@ -296,13 +301,26 @@ export const believer = router({
         position: string
         status: string
         serviceName: string
+        category: string
         createdAt: string
       }[]
     }
     const totalOrdersObj: { [year: string]: OrderType } = queryOrders.reduce(
-      (acc: { [year: string]: OrderType }, { serviceItem: { name: serviceName }, year, createdAt, ...cur }) => {
+      (
+        acc: { [year: string]: OrderType },
+        {
+          serviceItem: {
+            name: serviceName,
+            service: { category },
+          },
+          year,
+          createdAt,
+          ...cur
+        }
+      ) => {
         const yearStr = year.toString()
         const order = {
+          category,
           serviceName,
           createdAt: new Date(createdAt).toISOString().split('T')[0],
           ...cur,

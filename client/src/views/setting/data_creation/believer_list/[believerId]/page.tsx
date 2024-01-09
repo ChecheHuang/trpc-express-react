@@ -1,6 +1,5 @@
-import { Tabs } from 'antd'
 import type { TabsProps } from 'antd'
-import { Button, Form } from 'antd'
+import { Button, Form, Tabs } from 'antd'
 import { ColumnsType } from 'antd/es/table'
 import { Table } from 'antd/lib'
 import dayjs, { Dayjs } from 'dayjs'
@@ -16,9 +15,8 @@ import PrevButton from '@/components/buttons/PrevButton'
 import Container from '@/components/container/Container'
 import FormItems from '@/components/form/FormItems'
 import { useAntd } from '@/provider/AntdProvider'
-import { trpcClient, trpcQuery } from '@/provider/TrpcProvider'
-import { useTheme, SizeType } from '@/store/useTheme'
-import { TrpcOutputs } from '@/types/trpc'
+import { TrpcOutputs, trpcClient, trpcQuery } from '@/provider/TrpcProvider'
+import { SizeType, useTheme } from '@/store/useTheme'
 
 type DataType = TrpcOutputs['believer']['getBelieverDetailsById']
 
@@ -169,8 +167,12 @@ type OrderType = GetArrType<
 function ServiceTable({ orders }: { orders: OrderType[] }) {
   const columns: ColumnsType<OrderType> = [
     {
-      title: '訂單編號',
+      title: '服務編號',
       dataIndex: 'rank',
+    },
+    {
+      title: '服務種類',
+      dataIndex: 'category',
     },
     {
       title: '項目',

@@ -3,8 +3,7 @@ import { Button, Form, Input, Modal } from 'antd'
 import FormTemplate from '@/components/form/FormTemplate'
 import NumberInput from '@/components/form/NumberInput'
 import { useAntd } from '@/provider/AntdProvider'
-import { trpcQuery } from '@/provider/TrpcProvider'
-import { TrpcInputs } from '@/types/trpc'
+import { TrpcInputs, trpcQuery } from '@/provider/TrpcProvider'
 
 type FormType = TrpcInputs['service']['createDetail']
 

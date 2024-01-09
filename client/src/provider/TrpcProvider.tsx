@@ -1,5 +1,8 @@
-import { trpcRequest } from '@/config/trpcRequest'
-import { storage } from '@/lib/storage'
+import { message } from 'antd'
+import { RequestInitEsque } from 'node_modules/@trpc/client/dist/internals/types'
+import { PropsWithChildren, useMemo } from 'react'
+import { AppRouter } from '~/routers/trpc'
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   createTRPCProxyClient,
@@ -9,16 +12,16 @@ import {
   loggerLink,
   wsLink,
   splitLink,
+  CreateTRPCClientOptions,
 } from '@trpc/client'
-import type { CreateTRPCClientOptions } from '@trpc/client'
 import { createTRPCReact } from '@trpc/react-query'
-import { inferRouterOutputs } from '@trpc/server'
-import { message } from 'antd'
-import { RequestInitEsque } from 'node_modules/@trpc/client/dist/internals/types'
-import { PropsWithChildren, useMemo } from 'react'
-import { AppRouter } from '~/routers/trpc'
+import { inferRouterOutputs, inferRouterInputs } from '@trpc/server'
 
-export type RouterOutput = inferRouterOutputs<AppRouter>
+import { trpcRequest } from '@/config/trpcRequest'
+import { storage } from '@/lib/storage'
+
+export type TrpcOutputs = inferRouterOutputs<AppRouter>
+export type TrpcInputs = inferRouterInputs<AppRouter>
 
 const createAuthHeaders = (token?: string): { Authorization?: string } => {
   if (!token) return {}
